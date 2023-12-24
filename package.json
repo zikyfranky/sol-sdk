@@ -1,5 +1,5 @@
 {
-	"name": "@isaacfrank/sol-sdk",
+	"name": "@zikyfranky/sol-sdk",
 	"version": "0.0.1",
 	"description": "Client SDK.",
 	"repository": "https://github.com/zikyfranky/sol-sdk",
@@ -10,7 +10,7 @@
 		"dist"
 	],
 	"publishConfig": {
-		"@isaacfrank:registry": "https://npm.pkg.github.com"
+		"@zikyfranky:registry": "https://npm.pkg.github.com"
 	},
 	"scripts": {
 		"build-program": "anchor build --skip-lint -- --features \"feature-dev\"",
