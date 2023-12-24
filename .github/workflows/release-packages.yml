@@ -30,7 +30,7 @@ jobs:
         run: yarn build-sdk
 
       - name: Publish npm package
-        run: yarn npm publish
+        run: yarn npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_PAT}}
 
