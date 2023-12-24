@@ -84,4 +84,4 @@ Follow the following steps to publish a new version of the TypeScript SDK:
 2. Run `git push origin NEW_TAG`.
 3. `git push` the new commit as well.
 
-This will push the new release tag to GitHub and trigger the release pipeline, after which clients can install the latest SDK with `yarn add @isaacfrank/sol-sdk@latest`.
+This will push the new release tag to GitHub and trigger the release pipeline, after which clients can install the latest SDK with `yarn add @zikyfranky/sol-sdk@latest`.
