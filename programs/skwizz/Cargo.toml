@@ -1,0 +1,29 @@
+[package]
+name = "skwizz"
+version = "0.1.0"
+description = "Created with Anchor"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "skwizz"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+feature-dev = []
+
+[dependencies]
+anchor-lang = "0.29.0"
+anchor-spl = "0.29.0"
+spl-token = { version = "4.0", features = ["no-entrypoint"] }
+spl-associated-token-account = { version = "2.3.0", features = [
+  "no-entrypoint",
+] }
+solana-program = "1.9.18"
+mpl-token-metadata = "3.2.3"
+thiserror = "1.0"
+arrayref = "0.3.6"
