@@ -1,6 +1,6 @@
 import { Idl } from "@coral-xyz/anchor";
 
-const SKWIZZ_IDL: Idl = {
+const APP_IDL: Idl = {
   accounts: [
     {
       name: "User",
@@ -43,7 +43,7 @@ const SKWIZZ_IDL: Idl = {
       },
     },
     {
-      name: "Skwizz",
+      name: "App",
       type: {
         fields: [
           {
@@ -101,6 +101,10 @@ const SKWIZZ_IDL: Idl = {
           {
             name: "isInitialized",
             type: "bool",
+          },
+          {
+            name: "bump",
+            type: "u8",
           },
         ],
         kind: "struct",
@@ -187,8 +191,11 @@ const SKWIZZ_IDL: Idl = {
       name: "initialize",
     },
   ],
-  name: "skwizz",
+  metadata: {
+    address: "AHScsmJEzPyCPEpYqS66C3zkoEgoKscR6p4Rkp8xZoAN",
+  },
+  name: "app",
   version: "0.1.0",
 };
 
-export default SKWIZZ_IDL;
+export default APP_IDL;

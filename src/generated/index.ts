@@ -1,9 +1,9 @@
 import { Program } from "@coral-xyz/anchor";
-import SKWIZZ_IDL from "generated/idl";
-import { Skwizz } from "generated/Skwizz";
+import { App } from "generated/App";
+import APP_IDL from "generated/idl";
 
-export { SKWIZZ_IDL };
+export { APP_IDL };
 
-export { Skwizz };
+export { App };
 
-export type SkwizzProgram = Program<Skwizz>;
+export type AppProgram = Program<App>;

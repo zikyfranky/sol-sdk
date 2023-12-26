@@ -12,7 +12,7 @@ use {
 declare_id!("AHScsmJEzPyCPEpYqS66C3zkoEgoKscR6p4Rkp8xZoAN");
 
 #[program]
-pub mod skwizz {
+pub mod app {
     use super::*;
 
     pub fn initialize(ctx: Context<Initialize>) -> Result<()> {

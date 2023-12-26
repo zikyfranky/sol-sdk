@@ -1,4 +1,4 @@
-export type Skwizz = {
+export type App = {
   accounts: [
     {
       name: "user";
@@ -41,7 +41,7 @@ export type Skwizz = {
       };
     },
     {
-      name: "skwizz";
+      name: "app";
       type: {
         fields: [
           {
@@ -99,6 +99,10 @@ export type Skwizz = {
           {
             name: "isInitialized";
             type: "bool";
+          },
+          {
+            name: "bump";
+            type: "u8";
           }
         ];
         kind: "struct";
@@ -185,11 +189,11 @@ export type Skwizz = {
       name: "initialize";
     }
   ];
-  name: "skwizz";
+  name: "app";
   version: "0.1.0";
 };
 
-export const IDL: Skwizz = {
+export const IDL: App = {
   accounts: [
     {
       name: "user",
@@ -232,7 +236,7 @@ export const IDL: Skwizz = {
       },
     },
     {
-      name: "skwizz",
+      name: "app",
       type: {
         fields: [
           {
@@ -290,6 +294,10 @@ export const IDL: Skwizz = {
           {
             name: "isInitialized",
             type: "bool",
+          },
+          {
+            name: "bump",
+            type: "u8",
           },
         ],
         kind: "struct",
@@ -376,6 +384,6 @@ export const IDL: Skwizz = {
       name: "initialize",
     },
   ],
-  name: "skwizz",
+  name: "app",
   version: "0.1.0",
 };

@@ -1,9 +1,6 @@
-import SkwizzSdk from "sdk/SkwizzSdk";
-
 import parseInitializeIx from "parse/parseInitializeIx";
+import AppSdk from "sdk/AppSdk";
 
-import Environment from "types/enums/Environment";
+export { parseInitializeIx };
 
-export { Environment, parseInitializeIx };
-
-export default SkwizzSdk;
+export default AppSdk;

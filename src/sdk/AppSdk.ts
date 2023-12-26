@@ -1,28 +1,23 @@
 // eslint-disable-next-line simple-import-sort/imports
-import { AnchorProvider, Program, Wallet } from "@coral-xyz/anchor";
+import { Address, AnchorProvider, Program, Wallet } from "@coral-xyz/anchor";
 import { Connection, PublicKey } from "@solana/web3.js";
-import { SKWIZZ_PROGRAM_ID } from "constants/ProgramIds";
-import { SKWIZZ_IDL, Skwizz, SkwizzProgram } from "generated";
+import { APP_IDL, App, AppProgram } from "generated";
 import createInitializeIx from "sdk/instructions/createInitializeIx";
 import findProgramPda from "utils/pdas/findProgramPda";
 import findUserPda from "utils/pdas/findUserPda";
 import ixToTx from "utils/solana/ixToTx";
 
-export default class SkwizzSdk {
+export default class AppSdk {
   private connection: Connection;
-  public program: SkwizzProgram;
+  public program: AppProgram;
 
-  constructor(connection: Connection, wallet: Wallet) {
+  constructor(connection: Connection, wallet: Wallet, programId: Address) {
     this.connection = connection;
     const provider = new AnchorProvider(connection, wallet, {
       preflightCommitment: "recent",
     });
 
-    this.program = new Program<Skwizz>(
-      SKWIZZ_IDL as any,
-      SKWIZZ_PROGRAM_ID,
-      provider
-    );
+    this.program = new Program<App>(APP_IDL as any, programId, provider);
   }
 
   //
@@ -43,7 +38,7 @@ export default class SkwizzSdk {
   async fetchProgramInfo() {
     const [program] = await this.findProgramPda();
     return {
-      account: await this.program.account.skwizz.fetch(program, "confirmed"),
+      account: await this.program.account.app.fetch(program, "confirmed"),
       pubkey: program,
     };
   }

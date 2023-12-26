@@ -5,14 +5,17 @@ import {
   PublicKey,
 } from "@solana/web3.js";
 import parseInitializeIx from "parse/parseInitializeIx";
-import SkwizzSdk from "sdk/SkwizzSdk";
+import AppSdk from "sdk/AppSdk";
 import requestAirdrops from "tests/utils/requestAirdrops";
 import sendTransactionForTest from "tests/utils/sendTransactionForTest";
 import invariant from "tiny-invariant";
 
-import seed from "./constants/Seed";
+import getKeyPair from "../utils/getKeypair";
 
-const USER = Keypair.fromSecretKey(seed);
+const USER = Keypair.fromSecretKey(getKeyPair());
+const PROGRAM_ID = Keypair.fromSecretKey(
+  getKeyPair(`${__dirname}/../../target/deploy/app-keypair.json`)
+).publicKey;
 
 let programDataAddress: PublicKey;
 let userDataAddress: PublicKey;
@@ -23,7 +26,7 @@ const provider = AnchorProvider.env();
 const { wallet, connection } = provider;
 setProvider(provider);
 
-const sdk = new SkwizzSdk(connection, wallet as Wallet);
+const sdk = new AppSdk(connection, wallet as Wallet, PROGRAM_ID);
 
 async function getFirstAndOnlyIx(txid: string) {
   const parsedTx = await connection.getParsedTransaction(txid, "confirmed");
@@ -67,7 +70,10 @@ describe("Program Data / Parse tests", () => {
 
   it("Parse initialize ix", async () => {
     const ix = await getFirstAndOnlyIx(initialTx);
-    const parsedIx = parseInitializeIx(ix as PartiallyDecodedInstruction);
+    const parsedIx = parseInitializeIx(
+      ix as PartiallyDecodedInstruction,
+      PROGRAM_ID
+    );
     expect(parsedIx).not.toBeNull();
     invariant(parsedIx != null);
     const ixAccounts = parsedIx.accounts;

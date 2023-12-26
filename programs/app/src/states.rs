@@ -26,7 +26,7 @@ impl User {
 }
 
 #[account]
-pub struct Skwizz {
+pub struct App {
     name: String,
     symbol: String,
     decimals: u8,
@@ -45,10 +45,10 @@ pub struct Skwizz {
 }
 
 // Modifiers helper functions
-impl Skwizz {}
+impl App {}
 
 // Private functions
-impl Skwizz {
+impl App {
     fn purchase_tokens(
         &mut self,
         user: &Signer,
@@ -174,7 +174,7 @@ impl Skwizz {
 }
 
 // Public functions
-impl Skwizz {
+impl App {
     pub const MAXIMUM_SIZE: usize = 1 + 1 + 8 + 8 + 8 + 8 + 8 + 8 + 8 + 8 + 1 + 1 + 1 + 20; //  20 bytes for token name and symbol
 
     // initialize the state
@@ -187,8 +187,8 @@ impl Skwizz {
         // ambassadors: Vec<&Pubkey>,
     ) -> Result<()> {
 		require_eq!(self.is_initialized, false, ProgramError::AlreadyInitialized);
-        self.name = String::from("Skwizz");
-        self.symbol = String::from("SKWIZZ");
+        self.name = String::from("App");
+        self.symbol = String::from("APP");
         self.decimals = 9;
         self.dividend_fee = 10;
         self.token_initial_price = 100_000;

@@ -3,7 +3,7 @@ seeds = false
 skip-lint = false
 
 [programs.localnet]
-skwizz = "AHScsmJEzPyCPEpYqS66C3zkoEgoKscR6p4Rkp8xZoAN"
+app = "AHScsmJEzPyCPEpYqS66C3zkoEgoKscR6p4Rkp8xZoAN"
 
 [registry]
 url = "https://api.apr.dev"

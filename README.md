@@ -23,17 +23,17 @@ This is the Solana program that powers powh.
 This Solana program implements a dividend app.
 
 - Transaction 1
-  - Instruction 1 [optional]: `initialize`. Creates a `Skwizz` account, which is a PDA of `[program]` and a `User` account, which is a PDA of `[user, Pubkey]`. If the `Skwizz` account already exists, this instruction can be omitted.
+  - Instruction 1 [optional]: `initialize`. Creates a `App` account, which is a PDA of `[program]` and a `User` account, which is a PDA of `[user, Pubkey]`. If the `App` account already exists, this instruction can be omitted.
   - Signers: `admin`
 
 ### Accounts
 
-- **`Skwizz`**: This account stores information about the App
+- **`App`**: This account stores information about the App
 - **`User`**: This account stores information about a specific user.
 
 ### Instructions
 
-- `initialize`: This instruction creates a new `Skwizz` account, and initializes it with the Admin `User` account.
+- `initialize`: This instruction creates a new `App` account, and initializes it with the Admin `User` account.
 
 ## Repo Structure
 

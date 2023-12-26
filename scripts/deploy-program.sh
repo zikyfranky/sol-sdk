@@ -5,7 +5,7 @@ set -o pipefail
 cluster="devnet"
 skip=false
 key="$(eval echo ~/.config/solana/id.json)"
-program_name="skwizz"
+program_name="app"
 
 # Parse command line arguments
 while (( $# > 1 )); do 
@@ -41,8 +41,6 @@ while (( $# > 1 )); do
   shift 2
 done
 
-echo $skip
-
 program_deploy_path="target/deploy/$program_name.so"
 program_key="target/deploy/$program_name-keypair.json"
 program=$(solana-keygen pubkey $program_key)
@@ -57,7 +55,7 @@ if [ $skip == false ]; then
   yarn build-program
   echo -e "\nBuild finished!\n"
   if [ $cluster == "localhost" ]; then
-    echo -e "\Deploying $program for Solana $cluster.\n"
+    echo -e "\nDeploying $program for Solana $cluster.\n"
     anchor deploy
     echo -e "\nBuild finished!\n"
   else

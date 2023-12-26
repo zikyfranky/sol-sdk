@@ -1,10 +1,10 @@
 import { PublicKey, TransactionInstruction } from "@solana/web3.js";
-import { SkwizzProgram } from "generated";
+import { AppProgram } from "generated";
 import findProgramPda from "utils/pdas/findProgramPda";
 import findUserPda from "utils/pdas/findUserPda";
 
 type Args = {
-  program: SkwizzProgram;
+  program: AppProgram;
 };
 
 export default function createInitializeIx(
