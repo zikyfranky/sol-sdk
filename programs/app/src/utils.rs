@@ -1,9 +1,12 @@
-pub fn sqrt(value: u64) -> u64 {
+pub fn sqrt(x: u64) -> u64 {
     // Use fixed-point arithmetic to approximate square root using the Newton-Raphson method
-    let mut guess = value / 2;
-    for _ in 0..10 {
-        guess = (guess + value / guess) / 2;
+    let mut z = (x + 1) / 2;
+    let mut y = x;
+
+    while z < y {
+        y = z;
+        z = (x / z + z) / 2;
     }
 
-    guess
+    z
 }
