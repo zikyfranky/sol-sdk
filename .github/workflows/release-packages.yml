@@ -46,6 +46,19 @@ jobs:
       - name: Build programs
         run: anchor build --verifiable
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          cache: "yarn"
+          node-version: "16.14.2"
+          registry-url: https://npm.pkg.github.com/
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Build TS SDK
+        run: yarn build-sdk
+
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
@@ -54,3 +67,4 @@ jobs:
             target/deploy/*
             target/idl/*
             target/verifiable/*
+            dist/*
