@@ -36,6 +36,8 @@ jobs:
 
   release-binaries:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     name: Release verifiable binaries
     steps:
       - uses: actions/checkout@v2
