@@ -1,6 +1,6 @@
 {
 	"name": "@zikyfranky/sol-sdk",
-	"version": "0.0.1",
+	"version": "1.0.0",
 	"description": "Client SDK.",
 	"repository": "https://github.com/zikyfranky/sol-sdk",
 	"license": "UNLICENSED",
