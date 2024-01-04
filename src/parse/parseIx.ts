@@ -2,14 +2,16 @@ import { Address } from "@coral-xyz/anchor";
 import { PartiallyDecodedInstruction } from "@solana/web3.js";
 import decodeIx from "parse/decodeIx";
 
-const IX_NAME = "initialize";
+import { INSTRUCTIONS } from "../constants";
 
-export default function parseInitializeIx(
+const { IX_INITIALIZE } = INSTRUCTIONS;
+
+export const parseInitializeIx = (
   ix: PartiallyDecodedInstruction,
   programId: Address
-) {
+) => {
   const decodedIx = decodeIx(ix, programId);
-  if (decodedIx == null || decodedIx.name !== IX_NAME) {
+  if (decodedIx == null || decodedIx.name !== IX_INITIALIZE) {
     return null;
   }
 
@@ -21,4 +23,4 @@ export default function parseInitializeIx(
       system_program: ix.accounts[3],
     },
   };
-}
+};

@@ -23,20 +23,16 @@ const APP_IDL: Idl = {
             type: "bool",
           },
           {
-            name: "isAmbassador",
+            name: "isAmb",
             type: "bool",
           },
           {
-            name: "myAmbassadorQuota",
+            name: "ambassadorQuota",
             type: "u64",
           },
           {
             name: "payout",
             type: "i64",
-          },
-          {
-            name: "bump",
-            type: "u8",
           },
         ],
         kind: "struct",
@@ -71,6 +67,10 @@ const APP_IDL: Idl = {
             type: "u64",
           },
           {
+            name: "contractBalance",
+            type: "u64",
+          },
+          {
             name: "tokenSupply",
             type: "u64",
           },
@@ -102,10 +102,6 @@ const APP_IDL: Idl = {
             name: "isInitialized",
             type: "bool",
           },
-          {
-            name: "bump",
-            type: "u8",
-          },
         ],
         kind: "struct",
       },
@@ -114,53 +110,58 @@ const APP_IDL: Idl = {
   errors: [
     {
       code: 6000,
-      msg: "BP must be less than or equal to 10000",
-      name: "InvalidBasisPoints",
+      msg: "You are not a holder",
+      name: "NotABagHolder",
     },
     {
       code: 6001,
-      msg: "UninitializedAccount",
-      name: "UninitializedAccount",
+      msg: "You do not have a profit",
+      name: "NoPofit",
     },
     {
       code: 6002,
-      msg: "PublicKeyMismatch",
-      name: "PublicKeyMismatch",
+      msg: "You are not an administrator",
+      name: "NotAnAdmin",
     },
     {
       code: 6003,
-      msg: "IncorrectOwner",
-      name: "IncorrectOwner",
+      msg: "You are not an ambassador",
+      name: "NotAnAmbassador",
     },
     {
       code: 6004,
-      msg: "You are only allowed to place one bet at a time",
-      name: "MultipleBetsNotAllowed",
+      msg: "Exceeded the maximum quota",
+      name: "LimitExceeded",
     },
     {
       code: 6005,
-      msg: "Bet amounts must be greater than 0",
-      name: "InvalidBetAmount",
+      msg: "You sent less token than required",
+      name: "SentLessToken",
     },
     {
       code: 6006,
-      msg: "Number of flips must equal 1",
-      name: "InvalidNumFlips",
+      msg: "You do not have enough funds",
+      name: "InsufficientBalance",
     },
     {
       code: 6007,
-      msg: "Invalid value for bets (may not match on-chain data)",
-      name: "InvalidBets",
+      msg: "Transfers disabled in ambassador phase",
+      name: "AmbassadorPhase",
     },
     {
       code: 6008,
-      msg: "Invalid auction house authority",
-      name: "InvalidAuctionHouseAuthority",
+      msg: "Already Initialized Account",
+      name: "AlreadyInitialized",
     },
     {
       code: 6009,
-      msg: "Account is already initialized",
-      name: "AlreadyInitialized",
+      msg: "To address doesn't match generated to account",
+      name: "InvalidToAccount",
+    },
+    {
+      code: 6010,
+      msg: "Signer isn't Owner",
+      name: "NotOwner",
     },
   ],
   instructions: [
@@ -190,10 +191,279 @@ const APP_IDL: Idl = {
       args: [],
       name: "initialize",
     },
+    {
+      accounts: [
+        {
+          isMut: true,
+          isSigner: true,
+          name: "user",
+        },
+        {
+          isMut: true,
+          isSigner: false,
+          name: "userData",
+        },
+        {
+          isMut: true,
+          isOptional: true,
+          isSigner: false,
+          name: "referredByData",
+        },
+        {
+          isMut: true,
+          isSigner: false,
+          name: "programData",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "systemProgram",
+        },
+      ],
+      args: [
+        {
+          name: "lamportsToSend",
+          type: "u64",
+        },
+        {
+          name: "referredBy",
+          type: {
+            option: "publicKey",
+          },
+        },
+      ],
+      name: "buy",
+    },
+    {
+      accounts: [
+        {
+          isMut: true,
+          isSigner: true,
+          name: "user",
+        },
+        {
+          isMut: true,
+          isSigner: false,
+          name: "userData",
+        },
+        {
+          isMut: true,
+          isSigner: false,
+          name: "programData",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "systemProgram",
+        },
+      ],
+      args: [],
+      name: "reinvest",
+    },
+    {
+      accounts: [
+        {
+          isMut: true,
+          isSigner: true,
+          name: "user",
+        },
+        {
+          isMut: true,
+          isSigner: false,
+          name: "userData",
+        },
+        {
+          isMut: true,
+          isSigner: false,
+          name: "programData",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "systemProgram",
+        },
+      ],
+      args: [],
+      name: "exit",
+    },
+    {
+      accounts: [
+        {
+          isMut: true,
+          isSigner: true,
+          name: "user",
+        },
+        {
+          isMut: true,
+          isSigner: false,
+          name: "userData",
+        },
+        {
+          isMut: true,
+          isSigner: false,
+          name: "toData",
+        },
+        {
+          isMut: true,
+          isSigner: false,
+          name: "programData",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "systemProgram",
+        },
+      ],
+      args: [
+        {
+          name: "to",
+          type: "publicKey",
+        },
+        {
+          name: "lamportsToSend",
+          type: "u64",
+        },
+      ],
+      name: "transfer",
+    },
+    {
+      accounts: [
+        {
+          isMut: true,
+          isSigner: true,
+          name: "user",
+        },
+        {
+          isMut: true,
+          isSigner: false,
+          name: "userData",
+        },
+        {
+          isMut: true,
+          isSigner: false,
+          name: "programData",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "systemProgram",
+        },
+      ],
+      args: [],
+      name: "withdraw",
+    },
+    {
+      accounts: [
+        {
+          isMut: true,
+          isSigner: true,
+          name: "user",
+        },
+        {
+          isMut: true,
+          isSigner: false,
+          name: "userData",
+        },
+        {
+          isMut: true,
+          isSigner: false,
+          name: "programData",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "systemProgram",
+        },
+      ],
+      args: [
+        {
+          name: "lamportsToSend",
+          type: "u64",
+        },
+      ],
+      name: "sell",
+    },
+    {
+      accounts: [
+        {
+          isMut: false,
+          isSigner: false,
+          name: "userData",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "programData",
+        },
+      ],
+      args: [
+        {
+          name: "includingRef",
+          type: "bool",
+        },
+      ],
+      name: "myDividends",
+      returns: "u64",
+    },
+    {
+      accounts: [
+        {
+          isMut: false,
+          isSigner: false,
+          name: "programData",
+        },
+      ],
+      args: [],
+      name: "sellPrice",
+      returns: "u64",
+    },
+    {
+      accounts: [
+        {
+          isMut: false,
+          isSigner: false,
+          name: "programData",
+        },
+      ],
+      args: [],
+      name: "buyPrice",
+      returns: "u64",
+    },
+    {
+      accounts: [
+        {
+          isMut: false,
+          isSigner: false,
+          name: "programData",
+        },
+      ],
+      args: [
+        {
+          name: "tokens",
+          type: "u64",
+        },
+      ],
+      name: "calculateLamportsReceived",
+      returns: "u64",
+    },
+    {
+      accounts: [
+        {
+          isMut: false,
+          isSigner: false,
+          name: "programData",
+        },
+      ],
+      args: [
+        {
+          name: "lamports",
+          type: "u64",
+        },
+      ],
+      name: "calculateTokensReceived",
+      returns: "u64",
+    },
   ],
-  metadata: {
-    address: "AHScsmJEzPyCPEpYqS66C3zkoEgoKscR6p4Rkp8xZoAN",
-  },
   name: "app",
   version: "0.1.0",
 };

@@ -5,6 +5,7 @@ import {
   Signer,
   Transaction,
   TransactionSignature,
+  VersionedTransaction,
 } from "@solana/web3.js";
 import { IS_DEBUG } from "tests/setup/setup";
 
@@ -15,11 +16,14 @@ import { IS_DEBUG } from "tests/setup/setup";
  */
 export default async function sendTransactionForTest(
   connection: Connection,
-  transaction: Transaction,
+  transaction: Transaction | VersionedTransaction,
   signers: Array<Signer>,
   options?: ConfirmOptions
 ): Promise<TransactionSignature> {
   try {
+    if (transaction instanceof VersionedTransaction)
+      throw new Error("Incorrect transaction type");
+
     // NOTE: We need to await here to catch if the returned Promise rejects.
     return await sendAndConfirmTransaction(
       connection,
