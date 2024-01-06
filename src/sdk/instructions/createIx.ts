@@ -188,7 +188,7 @@ export const createSetAmbassadorIx = (
   const [userInfo] = findUserPda(user, program.programId);
 
   return program.methods
-    .setAdministrator(user, status)
+    .setAmbassador(user, status)
     .accounts({
       admin: admin,
       adminData: adminInfo,
