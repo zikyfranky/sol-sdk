@@ -75,6 +75,10 @@ impl User {
     fn update_admin_status(&mut self, status: bool) {
         self.is_admin = status;
     }
+
+    fn update_amb_status(&mut self, status: bool) {
+        self.is_amb = status;
+    }
 }
 
 impl User {
@@ -404,19 +408,42 @@ impl App {
     /**
      * In case the ambassador quota is not met, the administrator can manually disable the ambassador phase.
      */
-    pub fn disable_initial_stage(&mut self, admin: &mut Account<User>) -> Result<()> {
-        self.check_admin_rights(admin)?;
+    pub fn disable_initial_stage(
+        program: &mut Account<App>,
+        admin: &mut Account<User>,
+    ) -> Result<()> {
+        program.check_admin_rights(admin)?;
 
-        self.only_ambassadors = false;
+        program.only_ambassadors = false;
         Ok(())
     }
 
     /**
      * In case one of us dies, we need to replace ourselves.
      */
-    pub fn set_administrator(&mut self, admin: &mut Account<User>, status: bool) -> Result<()> {
-        self.check_admin_rights(admin)?;
-        admin.update_admin_status(status);
+    pub fn set_administrator(
+        program: &mut Account<App>,
+        admin: &mut Account<User>,
+        user: &mut Account<User>,
+        status: bool,
+    ) -> Result<()> {
+        program.check_admin_rights(admin)?;
+        user.update_admin_status(status);
+
+        Ok(())
+    }
+
+    /**
+     * Can make people ambassador on the fly
+     */
+    pub fn set_ambassador(
+        program: &mut Account<App>,
+        admin: &mut Account<User>,
+        user: &mut Account<User>,
+        status: bool,
+    ) -> Result<()> {
+        program.check_admin_rights(admin)?;
+        user.update_amb_status(status);
 
         Ok(())
     }
@@ -425,12 +452,12 @@ impl App {
      * Precautionary measures in case we need to adjust the masternode rate.
      */
     pub fn set_staking_requirement(
-        &mut self,
+        program: &mut Account<App>,
         admin: &mut Account<User>,
         amount_of_tokens: u64,
     ) -> Result<()> {
-        self.check_admin_rights(admin)?;
-        self.staking_requirement = amount_of_tokens;
+        program.check_admin_rights(admin)?;
+        program.staking_requirement = amount_of_tokens;
 
         Ok(())
     }
@@ -438,9 +465,13 @@ impl App {
     /**
      * If we want to rebrand, we can.
      */
-    pub fn set_name(&mut self, admin: &mut Account<User>, new_name: String) -> Result<()> {
-        self.check_admin_rights(admin)?;
-        self.name = new_name;
+    pub fn set_name(
+        program: &mut Account<App>,
+        admin: &mut Account<User>,
+        new_name: String,
+    ) -> Result<()> {
+        program.check_admin_rights(admin)?;
+        program.name = new_name;
 
         Ok(())
     }
@@ -448,9 +479,13 @@ impl App {
     /**
      * If we want to rebrand, we can.
      */
-    pub fn set_symbol(&mut self, admin: &mut Account<User>, new_symbol: String) -> Result<()> {
-        self.check_admin_rights(admin)?;
-        self.symbol = new_symbol;
+    pub fn set_symbol(
+        program: &mut Account<App>,
+        admin: &mut Account<User>,
+        new_symbol: String,
+    ) -> Result<()> {
+        program.check_admin_rights(admin)?;
+        program.symbol = new_symbol;
 
         Ok(())
     }

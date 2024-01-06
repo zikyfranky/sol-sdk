@@ -137,3 +137,117 @@ export const createSellIx = (
     })
     .instruction();
 };
+
+// Admin functions
+export const createDisableInitialStageIx = (
+  user: PublicKey,
+  { program }: Args
+): Promise<TransactionInstruction> => {
+  const [programInfo] = findProgramPda(program.programId);
+  const [userInfo] = findUserPda(user, program.programId);
+
+  return program.methods
+    .disableInitialStage()
+    .accounts({
+      programData: programInfo,
+      user: user,
+      userData: userInfo,
+    })
+    .instruction();
+};
+
+export const createSetAdministratorIx = (
+  admin: PublicKey,
+  user: PublicKey,
+  status: boolean,
+  { program }: Args
+): Promise<TransactionInstruction> => {
+  const [programInfo] = findProgramPda(program.programId);
+  const [adminInfo] = findUserPda(admin, program.programId);
+  const [userInfo] = findUserPda(user, program.programId);
+
+  return program.methods
+    .setAdministrator(user, status)
+    .accounts({
+      admin: admin,
+      adminData: adminInfo,
+      programData: programInfo,
+      userData: userInfo,
+    })
+    .instruction();
+};
+
+export const createSetAmbassadorIx = (
+  admin: PublicKey,
+  user: PublicKey,
+  status: boolean,
+  { program }: Args
+): Promise<TransactionInstruction> => {
+  const [programInfo] = findProgramPda(program.programId);
+  const [adminInfo] = findUserPda(admin, program.programId);
+  const [userInfo] = findUserPda(user, program.programId);
+
+  return program.methods
+    .setAdministrator(user, status)
+    .accounts({
+      admin: admin,
+      adminData: adminInfo,
+      programData: programInfo,
+      userData: userInfo,
+    })
+    .instruction();
+};
+
+export const createSetStakingRequirementIx = (
+  user: PublicKey,
+  amountOfTokens: BN,
+  { program }: Args
+): Promise<TransactionInstruction> => {
+  const [programInfo] = findProgramPda(program.programId);
+  const [userInfo] = findUserPda(user, program.programId);
+
+  return program.methods
+    .setStakingRequirement(amountOfTokens)
+    .accounts({
+      programData: programInfo,
+      user: user,
+      userData: userInfo,
+    })
+    .instruction();
+};
+
+export const createSetNameIx = (
+  user: PublicKey,
+  name: string,
+  { program }: Args
+): Promise<TransactionInstruction> => {
+  const [programInfo] = findProgramPda(program.programId);
+  const [userInfo] = findUserPda(user, program.programId);
+
+  return program.methods
+    .setName(name)
+    .accounts({
+      programData: programInfo,
+      user: user,
+      userData: userInfo,
+    })
+    .instruction();
+};
+
+export const createSetSymbolIx = (
+  user: PublicKey,
+  symbol: string,
+  { program }: Args
+): Promise<TransactionInstruction> => {
+  const [programInfo] = findProgramPda(program.programId);
+  const [userInfo] = findUserPda(user, program.programId);
+
+  return program.methods
+    .setSymbol(symbol)
+    .accounts({
+      programData: programInfo,
+      user: user,
+      userData: userInfo,
+    })
+    .instruction();
+};

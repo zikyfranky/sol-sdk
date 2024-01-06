@@ -386,6 +386,205 @@ const APP_IDL: Idl = {
     {
       accounts: [
         {
+          isMut: true,
+          isSigner: true,
+          name: "user",
+        },
+        {
+          isMut: true,
+          isSigner: false,
+          name: "userData",
+        },
+        {
+          isMut: true,
+          isSigner: false,
+          name: "programData",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "systemProgram",
+        },
+      ],
+      args: [],
+      name: "disableInitialStage",
+    },
+    {
+      accounts: [
+        {
+          isMut: true,
+          isSigner: true,
+          name: "admin",
+        },
+        {
+          isMut: true,
+          isSigner: false,
+          name: "adminData",
+        },
+        {
+          isMut: true,
+          isSigner: false,
+          name: "userData",
+        },
+        {
+          isMut: true,
+          isSigner: false,
+          name: "programData",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "systemProgram",
+        },
+      ],
+      args: [
+        {
+          name: "user",
+          type: "publicKey",
+        },
+        {
+          name: "status",
+          type: "bool",
+        },
+      ],
+      name: "setAdministrator",
+    },
+    {
+      accounts: [
+        {
+          isMut: true,
+          isSigner: true,
+          name: "admin",
+        },
+        {
+          isMut: true,
+          isSigner: false,
+          name: "adminData",
+        },
+        {
+          isMut: true,
+          isSigner: false,
+          name: "userData",
+        },
+        {
+          isMut: true,
+          isSigner: false,
+          name: "programData",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "systemProgram",
+        },
+      ],
+      args: [
+        {
+          name: "user",
+          type: "publicKey",
+        },
+        {
+          name: "status",
+          type: "bool",
+        },
+      ],
+      name: "setAmbassador",
+    },
+    {
+      accounts: [
+        {
+          isMut: true,
+          isSigner: true,
+          name: "user",
+        },
+        {
+          isMut: true,
+          isSigner: false,
+          name: "userData",
+        },
+        {
+          isMut: true,
+          isSigner: false,
+          name: "programData",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "systemProgram",
+        },
+      ],
+      args: [
+        {
+          name: "amountOfTokens",
+          type: "u64",
+        },
+      ],
+      name: "setStakingRequirement",
+    },
+    {
+      accounts: [
+        {
+          isMut: true,
+          isSigner: true,
+          name: "user",
+        },
+        {
+          isMut: true,
+          isSigner: false,
+          name: "userData",
+        },
+        {
+          isMut: true,
+          isSigner: false,
+          name: "programData",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "systemProgram",
+        },
+      ],
+      args: [
+        {
+          name: "name",
+          type: "string",
+        },
+      ],
+      name: "setName",
+    },
+    {
+      accounts: [
+        {
+          isMut: true,
+          isSigner: true,
+          name: "user",
+        },
+        {
+          isMut: true,
+          isSigner: false,
+          name: "userData",
+        },
+        {
+          isMut: true,
+          isSigner: false,
+          name: "programData",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "systemProgram",
+        },
+      ],
+      args: [
+        {
+          name: "symbol",
+          type: "string",
+        },
+      ],
+      name: "setSymbol",
+    },
+    {
+      accounts: [
+        {
           isMut: false,
           isSigner: false,
           name: "userData",

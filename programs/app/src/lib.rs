@@ -48,6 +48,31 @@ pub mod app {
         _sell(ctx, lamports_to_send)
     }
 
+    // Admin instructions
+    pub fn disable_initial_stage(ctx: Context<Admin>) -> Result<()> {
+        _disable_initial_stage(ctx)
+    }
+
+    pub fn set_administrator(ctx: Context<AdminSetter>, user: Pubkey, status: bool) -> Result<()> {
+        _set_administrator(ctx, user, status)
+    }
+
+    pub fn set_ambassador(ctx: Context<AdminSetter>, user: Pubkey, status: bool) -> Result<()> {
+        _set_ambassador(ctx, user, status)
+    }
+
+    pub fn set_staking_requirement(ctx: Context<Admin>, amount_of_tokens: u64) -> Result<()> {
+        _set_staking_requirement(ctx, amount_of_tokens)
+    }
+
+    pub fn set_name(ctx: Context<Admin>, name: String) -> Result<()> {
+        _set_name(ctx, name)
+    }
+
+    pub fn set_symbol(ctx: Context<Admin>, symbol: String) -> Result<()> {
+        _set_symbol(ctx, symbol)
+    }
+
     // Read only instructions
     pub fn my_dividends(ctx: Context<ReadOnly>, including_ref: bool) -> Result<u64> {
         _my_dividends(ctx, including_ref)

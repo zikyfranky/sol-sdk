@@ -14,10 +14,16 @@ import { APP_IDL, App, AppProgram } from "generated";
 import { IDL } from "generated/App";
 import {
   createBuyIx,
+  createDisableInitialStageIx,
   createExitIx,
   createInitializeIx,
   createReinvestIx,
   createSellIx,
+  createSetAdministratorIx,
+  createSetAmbassadorIx,
+  createSetNameIx,
+  createSetStakingRequirementIx,
+  createSetSymbolIx,
   createTransferIx,
   createWithdrawrIx,
 } from "sdk/instructions/createIx";
@@ -106,6 +112,59 @@ export default class AppSdk {
 
   async createSellTx(payer: PublicKey, amount: BN) {
     const ix = await createSellIx(payer, amount, {
+      program: this.program,
+    });
+    return ixToTx(this.connection, payer, ix, this.test);
+  }
+
+  //
+  // ADMIN
+  //
+  async createDisableInitialStageTx(payer: PublicKey) {
+    const ix = await createDisableInitialStageIx(payer, {
+      program: this.program,
+    });
+    return ixToTx(this.connection, payer, ix, this.test);
+  }
+
+  async createSetAdministratorTx(
+    payer: PublicKey,
+    user: PublicKey,
+    status: boolean
+  ) {
+    const ix = await createSetAdministratorIx(payer, user, status, {
+      program: this.program,
+    });
+    return ixToTx(this.connection, payer, ix, this.test);
+  }
+
+  async createSetAmbassadorTx(
+    payer: PublicKey,
+    user: PublicKey,
+    status: boolean
+  ) {
+    const ix = await createSetAmbassadorIx(payer, user, status, {
+      program: this.program,
+    });
+    return ixToTx(this.connection, payer, ix, this.test);
+  }
+
+  async createSetStakingRequirementTx(payer: PublicKey, amountOfTokens: BN) {
+    const ix = await createSetStakingRequirementIx(payer, amountOfTokens, {
+      program: this.program,
+    });
+    return ixToTx(this.connection, payer, ix, this.test);
+  }
+
+  async createSetNameTx(payer: PublicKey, name: string) {
+    const ix = await createSetNameIx(payer, name, {
+      program: this.program,
+    });
+    return ixToTx(this.connection, payer, ix, this.test);
+  }
+
+  async createSetSymbolTx(payer: PublicKey, name: string) {
+    const ix = await createSetSymbolIx(payer, name, {
       program: this.program,
     });
     return ixToTx(this.connection, payer, ix, this.test);

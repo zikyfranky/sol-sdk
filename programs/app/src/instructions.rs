@@ -91,6 +91,33 @@ pub struct Sell<'info> {
 }
 
 #[derive(Accounts)]
+pub struct Admin<'info> {
+    #[account(mut)]
+    pub user: Signer<'info>,
+    #[account(init_if_needed, seeds=[USER_SEED, user.key().as_ref()], bump, payer = user, space = 8 + User::MAXIMUM_SIZE)]
+    pub user_data: Account<'info, User>,
+
+    #[account(mut)]
+    pub program_data: Account<'info, App>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(user: Pubkey)]
+pub struct AdminSetter<'info> {
+    #[account(mut)]
+    pub admin: Signer<'info>,
+    #[account(init_if_needed, seeds=[USER_SEED, admin.key().as_ref()], bump, payer = admin, space = 8 + User::MAXIMUM_SIZE)]
+    pub admin_data: Account<'info, User>,
+    #[account(init_if_needed, seeds=[USER_SEED, user.key().as_ref()], bump, payer = admin, space = 8 + User::MAXIMUM_SIZE)]
+    pub user_data: Account<'info, User>,
+
+    #[account(mut)]
+    pub program_data: Account<'info, App>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
 pub struct ProgramReadOnly<'info> {
     pub program_data: Account<'info, App>,
 }
@@ -179,6 +206,51 @@ pub fn _sell(ctx: Context<Sell>, lamports_to_send: u64) -> Result<()> {
     let user_data_account = &mut ctx.accounts.user_data;
 
     App::sell(program, user, user_data_account, lamports_to_send)?;
+    Ok(())
+}
+
+// ADMIN FUNCTIONS
+pub fn _disable_initial_stage(ctx: Context<Admin>) -> Result<()> {
+    let user_data_account = &mut ctx.accounts.user_data;
+    let program = &mut ctx.accounts.program_data;
+    App::disable_initial_stage(program, user_data_account)?;
+    Ok(())
+}
+
+pub fn _set_administrator(ctx: Context<AdminSetter>, _user: Pubkey, status: bool) -> Result<()> {
+    let admin_data_account = &mut ctx.accounts.admin_data;
+    let user_data_account = &mut ctx.accounts.user_data;
+    let program = &mut ctx.accounts.program_data;
+    App::set_administrator(program, admin_data_account, user_data_account, status)?;
+    Ok(())
+}
+
+pub fn _set_ambassador(ctx: Context<AdminSetter>, _user: Pubkey, status: bool) -> Result<()> {
+    let admin_data_account = &mut ctx.accounts.admin_data;
+    let user_data_account = &mut ctx.accounts.user_data;
+    let program = &mut ctx.accounts.program_data;
+    App::set_ambassador(program, admin_data_account, user_data_account, status)?;
+    Ok(())
+}
+
+pub fn _set_staking_requirement(ctx: Context<Admin>, amount_of_tokens: u64) -> Result<()> {
+    let user_data_account = &mut ctx.accounts.user_data;
+    let program = &mut ctx.accounts.program_data;
+    App::set_staking_requirement(program, user_data_account, amount_of_tokens)?;
+    Ok(())
+}
+
+pub fn _set_name(ctx: Context<Admin>, new_name: String) -> Result<()> {
+    let user_data_account = &mut ctx.accounts.user_data;
+    let program = &mut ctx.accounts.program_data;
+    App::set_name(program, user_data_account, new_name)?;
+    Ok(())
+}
+
+pub fn _set_symbol(ctx: Context<Admin>, new_symbol: String) -> Result<()> {
+    let user_data_account = &mut ctx.accounts.user_data;
+    let program = &mut ctx.accounts.program_data;
+    App::set_symbol(program, user_data_account, new_symbol)?;
     Ok(())
 }
 
