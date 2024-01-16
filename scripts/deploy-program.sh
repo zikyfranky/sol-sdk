@@ -4,8 +4,9 @@ set -o pipefail
 
 cluster="devnet"
 skip=false
-key="$(eval echo ~/.config/solana/id.json)"
+key="$(eval echo ~/.config/solana/deployer.json)"
 program_name="app"
+initial=false
 
 # Parse command line arguments
 while (( $# > 1 )); do 
@@ -27,6 +28,12 @@ while (( $# > 1 )); do
       ;;
     -s)
       skip=true
+      ;;
+	--initial)
+      initial=true
+      ;;
+    -i)
+      initial=true
       ;;
     --key)
       key="$(eval echo $2)"
@@ -69,9 +76,14 @@ echo -e "Deployer address $deployer has $deployer_balance\n"
 echo -e "Program address $program has $program_balance\n"
 
 # Deploy program.
-echo -e "Calling solana program deploy $program_deploy_path -u $cluster -k $key --program-id $program\n"
-echo -e "This will take a moment...\n"
-solana program deploy $program_deploy_path -u $cluster -k $key --program-id $program --max-len 5000000
+if [ $initial == true ]; then
+	echo -e "Calling solana program deploy $program_deploy_path -u $cluster -k $key --program-id $program_key\n"
+	solana program deploy $program_deploy_path -u $cluster -k $key --program-id $program_key
+else
+	echo -e "Calling solana program deploy $program_deploy_path -u $cluster -k $key --program-id $program\n"
+	solana program deploy $program_deploy_path -u $cluster -k $key --program-id $program
+fi
 
+echo -e "This will take a moment...\n"
 echo -e "Program deploy to $cluster finished successfully!\n"
 exit 0

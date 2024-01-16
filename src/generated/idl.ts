@@ -180,19 +180,62 @@ const APP_IDL: Idl = {
         {
           isMut: true,
           isSigner: false,
+          name: "metadata",
+        },
+        {
+          docs: ["CHECK gets created by the program"],
+          isMut: true,
+          isSigner: false,
+          name: "mint",
+        },
+        {
+          isMut: true,
+          isSigner: false,
           name: "programData",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "rent",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "sysvarInstructions",
         },
         {
           isMut: false,
           isSigner: false,
           name: "systemProgram",
         },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "tokenProgram",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "tokenMetadataProgram",
+        },
       ],
-      args: [],
+      args: [
+        {
+          name: "metadata",
+          type: {
+            defined: "InitTokenParams",
+          },
+        },
+      ],
       name: "initialize",
     },
     {
       accounts: [
+        {
+          isMut: true,
+          isSigner: false,
+          name: "mint",
+        },
         {
           isMut: true,
           isSigner: true,
@@ -202,6 +245,11 @@ const APP_IDL: Idl = {
           isMut: true,
           isSigner: false,
           name: "userData",
+        },
+        {
+          isMut: true,
+          isSigner: false,
+          name: "userAta",
         },
         {
           isMut: true,
@@ -218,6 +266,16 @@ const APP_IDL: Idl = {
           isMut: false,
           isSigner: false,
           name: "systemProgram",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "tokenProgram",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "associatedTokenProgram",
         },
       ],
       args: [
@@ -238,6 +296,11 @@ const APP_IDL: Idl = {
       accounts: [
         {
           isMut: true,
+          isSigner: false,
+          name: "mint",
+        },
+        {
+          isMut: true,
           isSigner: true,
           name: "user",
         },
@@ -249,12 +312,27 @@ const APP_IDL: Idl = {
         {
           isMut: true,
           isSigner: false,
+          name: "userAta",
+        },
+        {
+          isMut: true,
+          isSigner: false,
           name: "programData",
         },
         {
           isMut: false,
           isSigner: false,
           name: "systemProgram",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "tokenProgram",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "associatedTokenProgram",
         },
       ],
       args: [],
@@ -264,6 +342,11 @@ const APP_IDL: Idl = {
       accounts: [
         {
           isMut: true,
+          isSigner: false,
+          name: "mint",
+        },
+        {
+          isMut: true,
           isSigner: true,
           name: "user",
         },
@@ -275,12 +358,27 @@ const APP_IDL: Idl = {
         {
           isMut: true,
           isSigner: false,
+          name: "userAta",
+        },
+        {
+          isMut: true,
+          isSigner: false,
           name: "programData",
         },
         {
           isMut: false,
           isSigner: false,
           name: "systemProgram",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "tokenProgram",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "associatedTokenProgram",
         },
       ],
       args: [],
@@ -290,6 +388,11 @@ const APP_IDL: Idl = {
       accounts: [
         {
           isMut: true,
+          isSigner: false,
+          name: "mint",
+        },
+        {
+          isMut: true,
           isSigner: true,
           name: "user",
         },
@@ -301,7 +404,22 @@ const APP_IDL: Idl = {
         {
           isMut: true,
           isSigner: false,
+          name: "userAta",
+        },
+        {
+          isMut: true,
+          isSigner: false,
           name: "toData",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "toInfo",
+        },
+        {
+          isMut: true,
+          isSigner: false,
+          name: "toAta",
         },
         {
           isMut: true,
@@ -312,6 +430,16 @@ const APP_IDL: Idl = {
           isMut: false,
           isSigner: false,
           name: "systemProgram",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "tokenProgram",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "associatedTokenProgram",
         },
       ],
       args: [
@@ -330,6 +458,11 @@ const APP_IDL: Idl = {
       accounts: [
         {
           isMut: true,
+          isSigner: false,
+          name: "mint",
+        },
+        {
+          isMut: true,
           isSigner: true,
           name: "user",
         },
@@ -341,12 +474,27 @@ const APP_IDL: Idl = {
         {
           isMut: true,
           isSigner: false,
+          name: "userAta",
+        },
+        {
+          isMut: true,
+          isSigner: false,
           name: "programData",
         },
         {
           isMut: false,
           isSigner: false,
           name: "systemProgram",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "tokenProgram",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "associatedTokenProgram",
         },
       ],
       args: [],
@@ -356,6 +504,11 @@ const APP_IDL: Idl = {
       accounts: [
         {
           isMut: true,
+          isSigner: false,
+          name: "mint",
+        },
+        {
+          isMut: true,
           isSigner: true,
           name: "user",
         },
@@ -367,12 +520,27 @@ const APP_IDL: Idl = {
         {
           isMut: true,
           isSigner: false,
+          name: "userAta",
+        },
+        {
+          isMut: true,
+          isSigner: false,
           name: "programData",
         },
         {
           isMut: false,
           isSigner: false,
           name: "systemProgram",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "tokenProgram",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "associatedTokenProgram",
         },
       ],
       args: [
@@ -664,6 +832,32 @@ const APP_IDL: Idl = {
     },
   ],
   name: "app",
+  types: [
+    {
+      name: "InitTokenParams",
+      type: {
+        fields: [
+          {
+            name: "name",
+            type: "string",
+          },
+          {
+            name: "symbol",
+            type: "string",
+          },
+          {
+            name: "uri",
+            type: "string",
+          },
+          {
+            name: "decimals",
+            type: "u8",
+          },
+        ],
+        kind: "struct",
+      },
+    },
+  ],
   version: "0.1.0",
 };
 

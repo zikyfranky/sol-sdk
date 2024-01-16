@@ -178,19 +178,62 @@ export type App = {
         {
           isMut: true;
           isSigner: false;
+          name: "metadata";
+        },
+        {
+          docs: ["CHECK gets created by the program"];
+          isMut: true;
+          isSigner: false;
+          name: "mint";
+        },
+        {
+          isMut: true;
+          isSigner: false;
           name: "programData";
         },
         {
           isMut: false;
           isSigner: false;
+          name: "rent";
+        },
+        {
+          isMut: false;
+          isSigner: false;
+          name: "sysvarInstructions";
+        },
+        {
+          isMut: false;
+          isSigner: false;
           name: "systemProgram";
+        },
+        {
+          isMut: false;
+          isSigner: false;
+          name: "tokenProgram";
+        },
+        {
+          isMut: false;
+          isSigner: false;
+          name: "tokenMetadataProgram";
         }
       ];
-      args: [];
+      args: [
+        {
+          name: "metadata";
+          type: {
+            defined: "InitTokenParams";
+          };
+        }
+      ];
       name: "initialize";
     },
     {
       accounts: [
+        {
+          isMut: true;
+          isSigner: false;
+          name: "mint";
+        },
         {
           isMut: true;
           isSigner: true;
@@ -200,6 +243,11 @@ export type App = {
           isMut: true;
           isSigner: false;
           name: "userData";
+        },
+        {
+          isMut: true;
+          isSigner: false;
+          name: "userAta";
         },
         {
           isMut: true;
@@ -216,6 +264,16 @@ export type App = {
           isMut: false;
           isSigner: false;
           name: "systemProgram";
+        },
+        {
+          isMut: false;
+          isSigner: false;
+          name: "tokenProgram";
+        },
+        {
+          isMut: false;
+          isSigner: false;
+          name: "associatedTokenProgram";
         }
       ];
       args: [
@@ -236,6 +294,11 @@ export type App = {
       accounts: [
         {
           isMut: true;
+          isSigner: false;
+          name: "mint";
+        },
+        {
+          isMut: true;
           isSigner: true;
           name: "user";
         },
@@ -247,12 +310,27 @@ export type App = {
         {
           isMut: true;
           isSigner: false;
+          name: "userAta";
+        },
+        {
+          isMut: true;
+          isSigner: false;
           name: "programData";
         },
         {
           isMut: false;
           isSigner: false;
           name: "systemProgram";
+        },
+        {
+          isMut: false;
+          isSigner: false;
+          name: "tokenProgram";
+        },
+        {
+          isMut: false;
+          isSigner: false;
+          name: "associatedTokenProgram";
         }
       ];
       args: [];
@@ -262,6 +340,11 @@ export type App = {
       accounts: [
         {
           isMut: true;
+          isSigner: false;
+          name: "mint";
+        },
+        {
+          isMut: true;
           isSigner: true;
           name: "user";
         },
@@ -273,12 +356,27 @@ export type App = {
         {
           isMut: true;
           isSigner: false;
+          name: "userAta";
+        },
+        {
+          isMut: true;
+          isSigner: false;
           name: "programData";
         },
         {
           isMut: false;
           isSigner: false;
           name: "systemProgram";
+        },
+        {
+          isMut: false;
+          isSigner: false;
+          name: "tokenProgram";
+        },
+        {
+          isMut: false;
+          isSigner: false;
+          name: "associatedTokenProgram";
         }
       ];
       args: [];
@@ -288,6 +386,11 @@ export type App = {
       accounts: [
         {
           isMut: true;
+          isSigner: false;
+          name: "mint";
+        },
+        {
+          isMut: true;
           isSigner: true;
           name: "user";
         },
@@ -299,7 +402,22 @@ export type App = {
         {
           isMut: true;
           isSigner: false;
+          name: "userAta";
+        },
+        {
+          isMut: true;
+          isSigner: false;
           name: "toData";
+        },
+        {
+          isMut: false;
+          isSigner: false;
+          name: "toInfo";
+        },
+        {
+          isMut: true;
+          isSigner: false;
+          name: "toAta";
         },
         {
           isMut: true;
@@ -310,6 +428,16 @@ export type App = {
           isMut: false;
           isSigner: false;
           name: "systemProgram";
+        },
+        {
+          isMut: false;
+          isSigner: false;
+          name: "tokenProgram";
+        },
+        {
+          isMut: false;
+          isSigner: false;
+          name: "associatedTokenProgram";
         }
       ];
       args: [
@@ -328,6 +456,11 @@ export type App = {
       accounts: [
         {
           isMut: true;
+          isSigner: false;
+          name: "mint";
+        },
+        {
+          isMut: true;
           isSigner: true;
           name: "user";
         },
@@ -339,12 +472,27 @@ export type App = {
         {
           isMut: true;
           isSigner: false;
+          name: "userAta";
+        },
+        {
+          isMut: true;
+          isSigner: false;
           name: "programData";
         },
         {
           isMut: false;
           isSigner: false;
           name: "systemProgram";
+        },
+        {
+          isMut: false;
+          isSigner: false;
+          name: "tokenProgram";
+        },
+        {
+          isMut: false;
+          isSigner: false;
+          name: "associatedTokenProgram";
         }
       ];
       args: [];
@@ -354,6 +502,11 @@ export type App = {
       accounts: [
         {
           isMut: true;
+          isSigner: false;
+          name: "mint";
+        },
+        {
+          isMut: true;
           isSigner: true;
           name: "user";
         },
@@ -365,12 +518,27 @@ export type App = {
         {
           isMut: true;
           isSigner: false;
+          name: "userAta";
+        },
+        {
+          isMut: true;
+          isSigner: false;
           name: "programData";
         },
         {
           isMut: false;
           isSigner: false;
           name: "systemProgram";
+        },
+        {
+          isMut: false;
+          isSigner: false;
+          name: "tokenProgram";
+        },
+        {
+          isMut: false;
+          isSigner: false;
+          name: "associatedTokenProgram";
         }
       ];
       args: [
@@ -662,6 +830,32 @@ export type App = {
     }
   ];
   name: "app";
+  types: [
+    {
+      name: "InitTokenParams";
+      type: {
+        fields: [
+          {
+            name: "name";
+            type: "string";
+          },
+          {
+            name: "symbol";
+            type: "string";
+          },
+          {
+            name: "uri";
+            type: "string";
+          },
+          {
+            name: "decimals";
+            type: "u8";
+          }
+        ];
+        kind: "struct";
+      };
+    }
+  ];
   version: "0.1.0";
 };
 
@@ -845,19 +1039,62 @@ export const IDL: App = {
         {
           isMut: true,
           isSigner: false,
+          name: "metadata",
+        },
+        {
+          docs: ["CHECK gets created by the program"],
+          isMut: true,
+          isSigner: false,
+          name: "mint",
+        },
+        {
+          isMut: true,
+          isSigner: false,
           name: "programData",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "rent",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "sysvarInstructions",
         },
         {
           isMut: false,
           isSigner: false,
           name: "systemProgram",
         },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "tokenProgram",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "tokenMetadataProgram",
+        },
       ],
-      args: [],
+      args: [
+        {
+          name: "metadata",
+          type: {
+            defined: "InitTokenParams",
+          },
+        },
+      ],
       name: "initialize",
     },
     {
       accounts: [
+        {
+          isMut: true,
+          isSigner: false,
+          name: "mint",
+        },
         {
           isMut: true,
           isSigner: true,
@@ -867,6 +1104,11 @@ export const IDL: App = {
           isMut: true,
           isSigner: false,
           name: "userData",
+        },
+        {
+          isMut: true,
+          isSigner: false,
+          name: "userAta",
         },
         {
           isMut: true,
@@ -883,6 +1125,16 @@ export const IDL: App = {
           isMut: false,
           isSigner: false,
           name: "systemProgram",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "tokenProgram",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "associatedTokenProgram",
         },
       ],
       args: [
@@ -903,6 +1155,11 @@ export const IDL: App = {
       accounts: [
         {
           isMut: true,
+          isSigner: false,
+          name: "mint",
+        },
+        {
+          isMut: true,
           isSigner: true,
           name: "user",
         },
@@ -914,12 +1171,27 @@ export const IDL: App = {
         {
           isMut: true,
           isSigner: false,
+          name: "userAta",
+        },
+        {
+          isMut: true,
+          isSigner: false,
           name: "programData",
         },
         {
           isMut: false,
           isSigner: false,
           name: "systemProgram",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "tokenProgram",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "associatedTokenProgram",
         },
       ],
       args: [],
@@ -929,6 +1201,11 @@ export const IDL: App = {
       accounts: [
         {
           isMut: true,
+          isSigner: false,
+          name: "mint",
+        },
+        {
+          isMut: true,
           isSigner: true,
           name: "user",
         },
@@ -940,12 +1217,27 @@ export const IDL: App = {
         {
           isMut: true,
           isSigner: false,
+          name: "userAta",
+        },
+        {
+          isMut: true,
+          isSigner: false,
           name: "programData",
         },
         {
           isMut: false,
           isSigner: false,
           name: "systemProgram",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "tokenProgram",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "associatedTokenProgram",
         },
       ],
       args: [],
@@ -955,6 +1247,11 @@ export const IDL: App = {
       accounts: [
         {
           isMut: true,
+          isSigner: false,
+          name: "mint",
+        },
+        {
+          isMut: true,
           isSigner: true,
           name: "user",
         },
@@ -966,7 +1263,22 @@ export const IDL: App = {
         {
           isMut: true,
           isSigner: false,
+          name: "userAta",
+        },
+        {
+          isMut: true,
+          isSigner: false,
           name: "toData",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "toInfo",
+        },
+        {
+          isMut: true,
+          isSigner: false,
+          name: "toAta",
         },
         {
           isMut: true,
@@ -977,6 +1289,16 @@ export const IDL: App = {
           isMut: false,
           isSigner: false,
           name: "systemProgram",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "tokenProgram",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "associatedTokenProgram",
         },
       ],
       args: [
@@ -995,6 +1317,11 @@ export const IDL: App = {
       accounts: [
         {
           isMut: true,
+          isSigner: false,
+          name: "mint",
+        },
+        {
+          isMut: true,
           isSigner: true,
           name: "user",
         },
@@ -1006,12 +1333,27 @@ export const IDL: App = {
         {
           isMut: true,
           isSigner: false,
+          name: "userAta",
+        },
+        {
+          isMut: true,
+          isSigner: false,
           name: "programData",
         },
         {
           isMut: false,
           isSigner: false,
           name: "systemProgram",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "tokenProgram",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "associatedTokenProgram",
         },
       ],
       args: [],
@@ -1021,6 +1363,11 @@ export const IDL: App = {
       accounts: [
         {
           isMut: true,
+          isSigner: false,
+          name: "mint",
+        },
+        {
+          isMut: true,
           isSigner: true,
           name: "user",
         },
@@ -1032,12 +1379,27 @@ export const IDL: App = {
         {
           isMut: true,
           isSigner: false,
+          name: "userAta",
+        },
+        {
+          isMut: true,
+          isSigner: false,
           name: "programData",
         },
         {
           isMut: false,
           isSigner: false,
           name: "systemProgram",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "tokenProgram",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "associatedTokenProgram",
         },
       ],
       args: [
@@ -1329,5 +1691,31 @@ export const IDL: App = {
     },
   ],
   name: "app",
+  types: [
+    {
+      name: "InitTokenParams",
+      type: {
+        fields: [
+          {
+            name: "name",
+            type: "string",
+          },
+          {
+            name: "symbol",
+            type: "string",
+          },
+          {
+            name: "uri",
+            type: "string",
+          },
+          {
+            name: "decimals",
+            type: "u8",
+          },
+        ],
+        kind: "struct",
+      },
+    },
+  ],
   version: "0.1.0",
 };

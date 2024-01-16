@@ -9,3 +9,6 @@ releases
 dist
 .yarn
 done.rs
+*.tgz
+*.gz
+*.zip

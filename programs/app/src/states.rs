@@ -1,4 +1,5 @@
 use {
+    crate::constants::MINT_SEED,
     crate::errors::ProgramError,
     crate::events::*,
     crate::utils::*,
@@ -9,6 +10,7 @@ use {
         },
         AnchorDeserialize, AnchorSerialize,
     },
+    anchor_spl::token_2022::{burn, mint_to, Burn, MintTo},
 };
 
 #[account]
@@ -193,6 +195,65 @@ impl App {
 
 // Private functions
 impl App {
+    fn mint<'a>(
+        data_account: &mut Account<'_, User>,
+        quantity: u64,
+        token_program: AccountInfo<'a>,
+        mint: AccountInfo<'a>,
+        user_ata: AccountInfo<'a>,
+        bump: u8,
+    ) -> Result<bool> {
+        let seeds = &[MINT_SEED, &[bump]];
+        let signer = [&seeds[..]];
+
+        mint_to(
+            CpiContext::new_with_signer(
+                token_program,
+                MintTo {
+                    authority: mint.clone(),
+                    to: user_ata,
+                    mint: mint.clone(),
+                },
+                &signer,
+            ),
+            quantity,
+        )?;
+
+        data_account.increase_balance_by(quantity);
+
+        Ok(true)
+    }
+
+    fn burn<'a>(
+        signer: AccountInfo<'a>,
+        data_account: &mut Account<'_, User>,
+        quantity: u64,
+        token_program: AccountInfo<'a>,
+        mint: AccountInfo<'a>,
+        user_ata: AccountInfo<'a>,
+        _bump: u8,
+    ) -> Result<bool> {
+        // let seeds = &[MINT_SEED, &[bump]];
+        // let seeds = &[signer.key().as_ref()];
+        // let sigsner = [&seeds[..], &seeds[..]];
+
+        burn(
+            CpiContext::new(
+                token_program,
+                Burn {
+                    authority: signer,
+                    from: user_ata,
+                    mint: mint.clone(),
+                },
+            ),
+            quantity,
+        )?;
+
+        data_account.decrease_balance_by(quantity);
+
+        Ok(true)
+    }
+
     fn purchase_tokens<'a>(
         program: &mut Account<'a, App>,
         buyer: &mut Signer<'a>,
@@ -202,6 +263,10 @@ impl App {
         lamports: u64,
         referred_by: Option<Pubkey>,
         direct_buy: bool,
+        token_program: AccountInfo<'a>,
+        mint: AccountInfo<'a>,
+        user_ata: AccountInfo<'a>,
+        bump: u8,
     ) -> Result<u64> {
         program.anti_early_whale(buyer_data_account, lamports)?;
         // data setup
@@ -283,7 +348,14 @@ impl App {
         }
 
         // update circulating supply & the ledger address for the customer
-        buyer_data_account.increase_balance_by(amount_of_tokens);
+        App::mint(
+            buyer_data_account,
+            amount_of_tokens,
+            token_program,
+            mint,
+            user_ata,
+            bump,
+        )?;
 
         // Tells the contract that the buyer doesn't deserve dividends for the tokens before they owned them;
         //really i know you think you do but you don't
@@ -366,14 +438,25 @@ impl App {
         ((((self.profit_per_share * user.balance) as i64) - user.payout) as u64) / self.magnitude
     }
 
-    fn transfer_sol_out(from: &mut Account<'_, App>, to: &mut Signer, amount: u64) -> Result<bool> {
+    fn transfer_sol_out(
+        from: &mut Account<'_, App>,
+        to: &mut Signer,
+        // sys: AccountInfo<'a>,
+        amount: u64,
+    ) -> Result<bool> {
         require!(
             amount <= from.contract_balance,
             ProgramError::InsufficientBalance
         );
         from.contract_balance -= amount;
+
+        // let _from = from.to_account_info();
+        // let _to = to.to_account_info();
+        // let ix = transfer(&from.key(), &to.key(), amount);
+        // invoke(&ix, &[_from, _to, sys])?;
         from.sub_lamports(amount)?;
         to.add_lamports(amount)?;
+
         Ok(true)
     }
 
@@ -459,6 +542,17 @@ impl App {
         program.check_admin_rights(admin)?;
         program.staking_requirement = amount_of_tokens;
 
+        Ok(())
+    }
+
+    /**
+     * Updates information of the metadata of mint
+     */
+    pub fn update_metadata_account(
+        program: &mut Account<App>,
+        admin: &mut Account<User>,
+    ) -> Result<()> {
+        program.check_admin_rights(admin)?;
         Ok(())
     }
 
@@ -582,13 +676,16 @@ impl App {
         program: &mut Account<'_, App>,
         admin_account: &Signer,
         admin_data_account: &mut Account<'_, User>,
+        name: String,
+        symbol: String,
+        decimals: u8,
     ) -> Result<()> {
         require!(!program.is_initialized, ProgramError::AlreadyInitialized);
 
         // Initialize main project state
-        program.name = String::from("App");
-        program.symbol = String::from("APP");
-        program.decimals = 9;
+        program.name = name;
+        program.symbol = symbol;
+        program.decimals = decimals;
         program.dividend_fee = 10;
         program.token_initial_price = 100000;
         program.token_incremental_price = 10000;
@@ -621,6 +718,10 @@ impl App {
         lamports: u64,
         referred_by: Option<Pubkey>,
         sys_info: AccountInfo<'a>,
+        token_program: AccountInfo<'a>,
+        mint: AccountInfo<'a>,
+        user_ata: AccountInfo<'a>,
+        bump: u8,
     ) -> Result<u64> {
         if buyer_data_account
             .authority
@@ -640,6 +741,10 @@ impl App {
             lamports,
             referred_by,
             true,
+            token_program,
+            mint,
+            user_ata,
+            bump,
         )
     }
 
@@ -651,6 +756,10 @@ impl App {
         user: &mut Signer<'a>,
         user_data_account: &mut Account<'_, User>,
         sys_info: AccountInfo<'a>,
+        token_program: AccountInfo<'a>,
+        mint: AccountInfo<'a>,
+        user_ata: AccountInfo<'a>,
+        bump: u8,
     ) -> Result<()> {
         if user_data_account
             .authority
@@ -672,6 +781,10 @@ impl App {
             dividends,
             None,
             false,
+            token_program,
+            mint,
+            user_ata,
+            bump,
         )?;
 
         on_reinvestment(user.key(), dividends, tokens);
@@ -681,10 +794,14 @@ impl App {
     /**
      * Alias of sell() and withdraw().
      */
-    pub fn leave(
-        program: &mut Account<'_, App>,
-        user: &mut Signer,
-        user_data_account: &mut Account<'_, User>,
+    pub fn leave<'a>(
+        program: &mut Account<'a, App>,
+        user: &mut Signer<'a>,
+        user_data_account: &mut Account<'a, User>,
+        token_program: AccountInfo<'a>,
+        mint: AccountInfo<'a>,
+        user_ata: AccountInfo<'a>,
+        bump: u8,
     ) -> Result<()> {
         if user_data_account
             .authority
@@ -696,11 +813,20 @@ impl App {
         program.owns_account(user, user_data_account)?;
         let tokens = user_data_account.balance;
         if tokens > 0 {
-            App::sell(program, user, user_data_account, tokens)?;
+            App::sell(
+                program,
+                user,
+                user_data_account,
+                tokens,
+                token_program,
+                mint,
+                user_ata,
+                bump,
+            )?;
         }
 
         // lambo delivery service
-        App::withdraw(program, user, user_data_account)?;
+        App::withdraw(program, user, user_data_account, true)?;
         Ok(())
     }
 
@@ -708,13 +834,18 @@ impl App {
      * Transfer tokens from the _caller to a new holder.
      * Remember, there's a 10% fee here as well.
      */
-    pub fn transfer(
-        program: &mut Account<'_, App>,
-        user: &mut Signer,
-        user_data_account: &mut Account<'_, User>,
+    pub fn transfer<'a>(
+        program: &mut Account<'a, App>,
+        user: &mut Signer<'a>,
+        user_data_account: &mut Account<'a, User>,
+        user_ata: AccountInfo<'a>,
         to: Pubkey,
-        to_data_account: &mut Account<'_, User>,
+        to_data_account: &mut Account<'a, User>,
+        to_ata: AccountInfo<'a>,
         amount_of_tokens: u64,
+        token_program: AccountInfo<'a>,
+        mint: AccountInfo<'a>,
+        bump: u8,
     ) -> Result<bool> {
         if user_data_account
             .authority
@@ -723,6 +854,7 @@ impl App {
         {
             user_data_account.authority = user.key();
         }
+
         if to_data_account.authority.key().eq(&Pubkey::default().key()) {
             to_data_account.authority = to.key();
         } else {
@@ -742,9 +874,10 @@ impl App {
         // ( we dont want whale premines )
         require!(!program.only_ambassadors, ProgramError::AmbassadorPhase);
 
+        let mut trans_amount: u64 = 0;
         // withdraw all outstanding dividends first
         if App::my_dividends(program, user_data_account, true) > 0 {
-            App::withdraw(program, user, user_data_account)?;
+            trans_amount = App::withdraw(program, user, user_data_account, false)?;
         }
 
         // liquify 10% of the tokens that are transfered
@@ -755,10 +888,24 @@ impl App {
 
         // burn the fee tokens
         program.token_supply -= token_fee;
-
         // exchange tokens
-        user_data_account.decrease_balance_by(amount_of_tokens);
-        to_data_account.increase_balance_by(taxed_tokens);
+        App::burn(
+            user.to_account_info(),
+            user_data_account,
+            amount_of_tokens,
+            token_program.clone(),
+            mint.clone(),
+            user_ata,
+            bump,
+        )?;
+        App::mint(
+            to_data_account,
+            taxed_tokens,
+            token_program,
+            mint,
+            to_ata,
+            bump,
+        )?;
 
         // update dividend trackers
         let from_payouts = (program.profit_per_share * amount_of_tokens) as i64;
@@ -777,6 +924,8 @@ impl App {
             amount_of_tokens,
         );
 
+        App::transfer_sol_out(program, user, trans_amount)?;
+
         Ok(true)
     }
 
@@ -787,7 +936,8 @@ impl App {
         program: &mut Account<'_, App>,
         user: &mut Signer,
         user_data_account: &mut Account<'_, User>,
-    ) -> Result<()> {
+        direct_call: bool,
+    ) -> Result<u64> {
         if user_data_account
             .authority
             .key()
@@ -811,22 +961,28 @@ impl App {
 
         // lambo delivery service
         // Transfer from the app state
-        App::transfer_sol_out(program, user, dividends)?;
+        if direct_call {
+            App::transfer_sol_out(program, user, dividends)?;
+        }
 
         // fire event
         on_withdraw(user_data_account.authority, dividends);
 
-        Ok(())
+        Ok(dividends)
     }
 
     /**
      * Liquifies tokens to ether.
      */
-    pub fn sell(
-        program: &mut Account<'_, App>,
-        user: &Signer,
-        user_data_account: &mut Account<'_, User>,
+    pub fn sell<'a>(
+        program: &mut Account<'a, App>,
+        user: &Signer<'a>,
+        user_data_account: &mut Account<'a, User>,
         amount_of_tokens: u64,
+        token_program: AccountInfo<'a>,
+        mint: AccountInfo<'a>,
+        user_ata: AccountInfo<'a>,
+        bump: u8,
     ) -> Result<()> {
         if user_data_account
             .authority
@@ -848,7 +1004,15 @@ impl App {
 
         // burn the sold tokens
         program.token_supply -= tokens;
-        user_data_account.decrease_balance_by(tokens);
+        App::burn(
+            user.to_account_info(),
+            user_data_account,
+            tokens,
+            token_program,
+            mint,
+            user_ata,
+            bump,
+        )?;
 
         // update dividends tracker
         let updated_payouts =

@@ -1,4 +1,9 @@
+/* eslint-disable simple-import-sort/imports */
 import { AnchorProvider, BN, setProvider } from "@coral-xyz/anchor";
+import {
+  TOKEN_2022_PROGRAM_ID,
+  getOrCreateAssociatedTokenAccount,
+} from "@solana/spl-token";
 import {
   Keypair,
   LAMPORTS_PER_SOL,
@@ -10,6 +15,7 @@ import AppSdk from "sdk/AppSdk";
 import requestAirdrops from "tests/utils/requestAirdrops";
 import sendTransactionForTest from "tests/utils/sendTransactionForTest";
 import invariant from "tiny-invariant";
+import { findMintPda } from "utils/pdas";
 
 import getKeyPair from "../utils/getKeypair";
 
@@ -45,7 +51,12 @@ describe("Program", () => {
   });
 
   it("Create Program Account and User Account", async () => {
-    const tx = await sdk.createInitializeTx(USER.publicKey);
+    const tx = await sdk.createInitializeTx(USER.publicKey, {
+      decimals: 9,
+      name: "app",
+      symbol: "APP",
+      uri: "",
+    });
 
     initialTx = await sendTransactionForTest(connection, tx, [USER]);
 
@@ -76,9 +87,14 @@ describe("Program", () => {
       ix as PartiallyDecodedInstruction,
       PROGRAM_ID
     );
+
+    // const deets = await connection.getParsedTransaction(initialTx, {
+    //   commitment: "confirmed",
+    // });
+    // console.log(deets?.meta?.logMessages);
     expect(parsedIx).not.toBeNull();
     invariant(parsedIx != null);
-    const ixAccounts = parsedIx.accounts;
+    const ixAccounts = parsedIx.accounts as { [key: string]: PublicKey };
     expect(ixAccounts.admin.toString()).toEqual(USER.publicKey.toString());
     expect(ixAccounts.admin_data.toString()).toEqual(
       userDataAddress.toString()
@@ -88,17 +104,78 @@ describe("Program", () => {
     );
   });
 
+  it("Can Buy Token", async () => {
+    const tx = await sdk.createBuyTx(USER.publicKey, new BN(LAMPORTS_PER_SOL));
+
+    await sendTransactionForTest(connection, tx, [USER]);
+
+    const tokenAccount = await getOrCreateAssociatedTokenAccount(
+      connection,
+      USER,
+      findMintPda(sdk.program.programId)[0],
+      USER.publicKey,
+      false,
+      undefined,
+      undefined,
+      TOKEN_2022_PROGRAM_ID
+    );
+
+    const { account: program } = await sdk.fetchProgramInfo();
+    const { account: user } = await sdk.fetchUserInfo(USER.publicKey);
+    const { tokenSupply, contractBalance } = program;
+
+    expect(new BN(tokenAccount.amount.toString()) == user.balance);
+    expect(tokenSupply == user.balance);
+    expect(new BN(LAMPORTS_PER_SOL) == contractBalance);
+  });
+
+  it("Can Sell Token", async () => {
+    const tokenAccount = await getOrCreateAssociatedTokenAccount(
+      connection,
+      USER,
+      findMintPda(sdk.program.programId)[0],
+      USER.publicKey,
+      false,
+      undefined,
+      undefined,
+      TOKEN_2022_PROGRAM_ID
+    );
+
+    const balance = new BN(tokenAccount.amount.toString());
+    const sellAmount = balance.div(new BN(2));
+    const nativeOldBalance = await connection.getBalance(USER.publicKey);
+
+    expect(balance.toNumber()).toBeGreaterThan(0);
+
+    const tx = await sdk.createSellTx(USER.publicKey, sellAmount);
+
+    await sendTransactionForTest(connection, tx, [USER]);
+
+    const nativeNewBalance = await connection.getBalance(USER.publicKey);
+    const { account: program } = await sdk.fetchProgramInfo();
+    const { account: user } = await sdk.fetchUserInfo(USER.publicKey);
+    const { tokenSupply, contractBalance } = program;
+
+    expect(user.balance == balance.sub(sellAmount));
+    expect(tokenSupply == user.balance);
+    expect(
+      new BN(LAMPORTS_PER_SOL).sub(
+        new BN((nativeNewBalance - nativeOldBalance).toString())
+      ) == contractBalance
+    );
+  });
+
   describe("Can call readonly functions", () => {
     it("My dividends", async () => {
       const value = await sdk.myDividends(USER.publicKey, true);
 
-      expect(value.toNumber()).toEqual(0);
+      expect(value.toNumber()).toBeGreaterThan(0);
     });
 
     it("Sell Price", async () => {
       const value = await sdk.sellPrice();
 
-      expect(value.toNumber()).toEqual(0);
+      expect(value.toNumber()).toBeGreaterThan(0);
     });
 
     it("Buy price", async () => {
@@ -111,15 +188,12 @@ describe("Program", () => {
       const value = await sdk.calculateLamportsReceived(
         new BN(LAMPORTS_PER_SOL)
       );
-
-      expect(value.toNumber()).toEqual(0);
+      expect(value.toNumber()).toBeGreaterThan(0);
     });
 
     it("calculate tokens to receive for x lamports", async () => {
       const value = await sdk.calculateTokensReceived(new BN(LAMPORTS_PER_SOL));
-      console.log(value.toString());
-
-      expect(value.toNumber()).toEqual(0);
+      expect(value.toNumber()).toBeGreaterThan(0);
     });
   });
 });

@@ -19,8 +19,14 @@ export const parseInitializeIx = (
     accounts: {
       admin: ix.accounts[0],
       admin_data: ix.accounts[1],
-      program_data: ix.accounts[2],
-      system_program: ix.accounts[3],
+      metadata: ix.accounts[2],
+      mint: ix.accounts[3],
+      program_data: ix.accounts[4],
+      rent: ix.accounts[5],
+      system_program: ix.accounts[7],
+      sysvar_instructions: ix.accounts[6],
+      token_metadata: ix.accounts[9],
+      token_program: ix.accounts[8],
     },
   };
 };

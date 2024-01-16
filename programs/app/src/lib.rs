@@ -10,14 +10,14 @@ use {
     anchor_lang::{prelude::*, AnchorDeserialize, AnchorSerialize},
 };
 
-declare_id!("9eAsSSyUEkPwYcTAWpf9MSYboarjv1J3vKWz8q9q9VSe");
+declare_id!("8yCmCyhDsLzof54Pbuj2dBxAKSyLosdFcR7Aov894NJk");
 
 #[program]
 pub mod app {
     use super::*;
 
-    pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
-        _initialize(ctx)
+    pub fn initialize(ctx: Context<Initialize>, metadata: InitTokenParams) -> Result<()> {
+        _initialize(ctx, metadata)
     }
 
     pub fn buy(

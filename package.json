@@ -1,6 +1,6 @@
 {
   "name": "@zikyfranky/sol-sdk",
-  "version": "1.1.1",
+  "version": "2.0.0",
   "description": "Client SDK.",
   "repository": "https://github.com/zikyfranky/sol-sdk",
   "license": "UNLICENSED",
@@ -15,6 +15,7 @@
   "scripts": {
     "build-program": "anchor build --skip-lint -- --features \"feature-dev\"",
     "build-sdk": "rimraf dist && tsc -P tsconfig.build.json && tsc-alias -p tsconfig.build.json",
+    "start-node": "solana-test-validator -u 'https://api.mainnet-beta.solana.com' --faucet-port 1577 -C ~/.config/solana/cli/use.yml -c TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA -c TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb -c ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL -c metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s -c PwDiXFxQsGra4sFFTT8r1QWRMd4vfumiWC1jfWNfdYT -l ~/sol-ganache",
     "deploy-program": "./scripts/deploy-program.sh",
     "eslint": "eslint --cache 'src/**/*.ts'",
     "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",

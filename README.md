@@ -15,7 +15,7 @@
 
 This is the Solana program that powers powh.
 
-- **Devnet address**: `9eAsSSyUEkPwYcTAWpf9MSYboarjv1J3vKWz8q9q9VSe`
+- **Address**: `8yCmCyhDsLzof54Pbuj2dBxAKSyLosdFcR7Aov894NJk`
 - **Live website (uses devnet)**:
 - **[Frontend code for App](https://github.com/zikyfranky)**
 - **[Backend code for App](https://github.com/zikyfranky)**

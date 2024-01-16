@@ -1,17 +1,12 @@
 import { BN } from "@coral-xyz/anchor";
 import { PublicKey, TransactionInstruction } from "@solana/web3.js";
 import { AppProgram } from "generated";
-import findProgramPda from "utils/pdas/findProgramPda";
-import findUserPda from "utils/pdas/findUserPda";
-
-type Args = {
-  program: AppProgram;
-};
+import { findProgramPda, findUserPda } from "utils/pdas";
 
 export const getMyDividends = (
   user: PublicKey,
   withReferralBonus: boolean,
-  { program }: Args,
+  program: AppProgram,
   test: boolean
 ): { ixName: string; value: Promise<BN | TransactionInstruction> } => {
   const [programInfo] = findProgramPda(program.programId);
@@ -29,7 +24,7 @@ export const getMyDividends = (
 };
 
 export const getSellPrice = (
-  { program }: Args,
+  program: AppProgram,
   test: boolean
 ): { ixName: string; value: Promise<BN | TransactionInstruction> } => {
   const [programInfo] = findProgramPda(program.programId);
@@ -44,7 +39,7 @@ export const getSellPrice = (
 };
 
 export const getBuyPrice = (
-  { program }: Args,
+  program: AppProgram,
   test: boolean
 ): { ixName: string; value: Promise<BN | TransactionInstruction> } => {
   const [programInfo] = findProgramPda(program.programId);
@@ -60,7 +55,7 @@ export const getBuyPrice = (
 
 export const getCalculateLamportsReceived = (
   lamports: BN,
-  { program }: Args,
+  program: AppProgram,
   test: boolean
 ): { ixName: string; value: Promise<BN | TransactionInstruction> } => {
   const [programInfo] = findProgramPda(program.programId);
@@ -78,7 +73,7 @@ export const getCalculateLamportsReceived = (
 
 export const getCalculateTokensReceived = (
   tokens: BN,
-  { program }: Args,
+  program: AppProgram,
   test: boolean
 ): { ixName: string; value: Promise<BN | TransactionInstruction> } => {
   const [programInfo] = findProgramPda(program.programId);

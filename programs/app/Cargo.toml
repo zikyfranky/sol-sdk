@@ -19,11 +19,4 @@ feature-dev = []
 [dependencies]
 anchor-lang = {version = "0.29.0", features = ["init-if-needed"]}
 anchor-spl = "0.29.0"
-spl-token = { version = "4.0", features = ["no-entrypoint"] }
-spl-associated-token-account = { version = "2.3.0", features = [
-  "no-entrypoint",
-] }
-solana-program = "1.9.18"
-mpl-token-metadata = "3.2.3"
-thiserror = "1.0"
-arrayref = "0.3.6"
+mpl-token-metadata = "4.0.0"

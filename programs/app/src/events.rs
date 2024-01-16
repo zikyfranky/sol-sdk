@@ -5,15 +5,15 @@ use anchor_lang::prelude::*;
 ==============================*/
 pub fn on_token_purchase(
     customer_address: Pubkey,
-    incoming_eth: u64,
+    incoming_lamports: u64,
     tokens_minted: u64,
     referred_by: Pubkey,
 ) -> bool {
     // Emit a message for TokenPurchase event
     msg!(
-        "TokenPurchase: Customer={}, ETH={}, Tokens={}, ReferredBy={}",
+        "TokenPurchase: Customer={}, Lamports={}, Tokens={}, ReferredBy={}",
         customer_address,
-        incoming_eth,
+        incoming_lamports,
         tokens_minted,
         referred_by
     );
@@ -21,36 +21,40 @@ pub fn on_token_purchase(
     true
 }
 
-pub fn on_token_sell(customer_address: Pubkey, tokens_burned: u64, eth_earned: u64) -> bool {
+pub fn on_token_sell(customer_address: Pubkey, tokens_burned: u64, lamports_earned: u64) -> bool {
     // Emit a message for TokenSell event
     msg!(
-        "TokenSell: Customer={}, Tokens={}, ETH={}",
+        "TokenSell: Customer={}, Tokens={}, Lamports={}",
         customer_address,
         tokens_burned,
-        eth_earned
+        lamports_earned
     );
 
     true
 }
 
-pub fn on_reinvestment(customer_address: Pubkey, eth_reinvested: u64, tokens_minted: u64) -> bool {
+pub fn on_reinvestment(
+    customer_address: Pubkey,
+    lamports_reinvested: u64,
+    tokens_minted: u64,
+) -> bool {
     // Emit a message for Reinvestment event
     msg!(
-        "Reinvestment: Customer={}, ETH={}, Tokens={}",
+        "Reinvestment: Customer={}, Lamports={}, Tokens={}",
         customer_address,
-        eth_reinvested,
+        lamports_reinvested,
         tokens_minted
     );
 
     true
 }
 
-pub fn on_withdraw(customer_address: Pubkey, eth_withdrawn: u64) -> bool {
+pub fn on_withdraw(customer_address: Pubkey, lamports_withdrawn: u64) -> bool {
     // Emit a message for Withdraw event
     msg!(
-        "Withdraw: Customer={}, ETH={}",
+        "Withdraw: Customer={}, Lamports={}",
         customer_address,
-        eth_withdrawn
+        lamports_withdrawn
     );
 
     true
@@ -64,7 +68,7 @@ pub fn on_masternode(
 ) -> bool {
     // Emit a message for Masternode event
     msg!(
-        "Masternode: Customer={}, Consumer={}, ETH={}, Bonus={}",
+        "Masternode: Customer={}, Consumer={}, Lamports={}, Bonus={}",
         customer_address,
         consumer_address,
         lamport_used,

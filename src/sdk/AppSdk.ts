@@ -13,6 +13,7 @@ import {
 import { APP_IDL, App, AppProgram } from "generated";
 import { IDL } from "generated/App";
 import {
+  Metadata,
   createBuyIx,
   createDisableInitialStageIx,
   createExitIx,
@@ -25,10 +26,9 @@ import {
   createSetStakingRequirementIx,
   createSetSymbolIx,
   createTransferIx,
-  createWithdrawrIx,
+  createWithdrawIx,
 } from "sdk/instructions/createIx";
-import findProgramPda from "utils/pdas/findProgramPda";
-import findUserPda from "utils/pdas/findUserPda";
+import { findProgramPda, findUserPda } from "utils/pdas";
 import ixToTx from "utils/solana/ixToTx";
 import {
   getBuyPrice,
@@ -63,57 +63,39 @@ export default class AppSdk {
   //
   // TRANSACTIONS
   //
-  async createInitializeTx(payer: PublicKey) {
-    const ix = await createInitializeIx(payer, {
-      program: this.program,
-    });
+  async createInitializeTx(payer: PublicKey, meta: Metadata) {
+    const ix = await createInitializeIx(payer, meta, this.program);
+
     return ixToTx(this.connection, payer, ix, this.test);
   }
 
   async createBuyTx(payer: PublicKey, amount: BN, referral?: PublicKey) {
-    const ix = await createBuyIx(
-      payer,
-      amount,
-      {
-        program: this.program,
-      },
-      referral
-    );
+    const ix = await createBuyIx(payer, amount, this.program, referral);
     return ixToTx(this.connection, payer, ix, this.test);
   }
 
   async createReinvestTx(payer: PublicKey) {
-    const ix = await createReinvestIx(payer, {
-      program: this.program,
-    });
+    const ix = await createReinvestIx(payer, this.program);
     return ixToTx(this.connection, payer, ix, this.test);
   }
 
   async createExitTx(payer: PublicKey) {
-    const ix = await createExitIx(payer, {
-      program: this.program,
-    });
+    const ix = await createExitIx(payer, this.program);
     return ixToTx(this.connection, payer, ix, this.test);
   }
 
   async createTransferTx(payer: PublicKey, to: PublicKey, amount: BN) {
-    const ix = await createTransferIx(payer, to, amount, {
-      program: this.program,
-    });
+    const ix = await createTransferIx(payer, to, amount, this.program);
     return ixToTx(this.connection, payer, ix, this.test);
   }
 
   async createWithdrawTx(payer: PublicKey) {
-    const ix = await createWithdrawrIx(payer, {
-      program: this.program,
-    });
+    const ix = await createWithdrawIx(payer, this.program);
     return ixToTx(this.connection, payer, ix, this.test);
   }
 
   async createSellTx(payer: PublicKey, amount: BN) {
-    const ix = await createSellIx(payer, amount, {
-      program: this.program,
-    });
+    const ix = await createSellIx(payer, amount, this.program);
     return ixToTx(this.connection, payer, ix, this.test);
   }
 
@@ -121,9 +103,7 @@ export default class AppSdk {
   // ADMIN
   //
   async createDisableInitialStageTx(payer: PublicKey) {
-    const ix = await createDisableInitialStageIx(payer, {
-      program: this.program,
-    });
+    const ix = await createDisableInitialStageIx(payer, this.program);
     return ixToTx(this.connection, payer, ix, this.test);
   }
 
@@ -132,9 +112,12 @@ export default class AppSdk {
     user: PublicKey,
     status: boolean
   ) {
-    const ix = await createSetAdministratorIx(payer, user, status, {
-      program: this.program,
-    });
+    const ix = await createSetAdministratorIx(
+      payer,
+      user,
+      status,
+      this.program
+    );
     return ixToTx(this.connection, payer, ix, this.test);
   }
 
@@ -143,30 +126,26 @@ export default class AppSdk {
     user: PublicKey,
     status: boolean
   ) {
-    const ix = await createSetAmbassadorIx(payer, user, status, {
-      program: this.program,
-    });
+    const ix = await createSetAmbassadorIx(payer, user, status, this.program);
     return ixToTx(this.connection, payer, ix, this.test);
   }
 
   async createSetStakingRequirementTx(payer: PublicKey, amountOfTokens: BN) {
-    const ix = await createSetStakingRequirementIx(payer, amountOfTokens, {
-      program: this.program,
-    });
+    const ix = await createSetStakingRequirementIx(
+      payer,
+      amountOfTokens,
+      this.program
+    );
     return ixToTx(this.connection, payer, ix, this.test);
   }
 
   async createSetNameTx(payer: PublicKey, name: string) {
-    const ix = await createSetNameIx(payer, name, {
-      program: this.program,
-    });
+    const ix = await createSetNameIx(payer, name, this.program);
     return ixToTx(this.connection, payer, ix, this.test);
   }
 
   async createSetSymbolTx(payer: PublicKey, name: string) {
-    const ix = await createSetSymbolIx(payer, name, {
-      program: this.program,
-    });
+    const ix = await createSetSymbolIx(payer, name, this.program);
     return ixToTx(this.connection, payer, ix, this.test);
   }
 
@@ -231,8 +210,7 @@ export default class AppSdk {
     const sim = await this.connection.simulateTransaction(tx);
 
     if (sim.value.err) {
-      console.log(sim.value);
-      if (sim.value.logs) {
+      if (sim.value.logs && sim.value.logs.length > 0) {
         for (let i = 0; i < sim.value.logs!.length; i++) {
           const log = sim.value.logs![i];
           if (log?.includes("Error")) {
@@ -276,9 +254,7 @@ export default class AppSdk {
     const { ixName, value } = getMyDividends(
       user,
       ref,
-      {
-        program: this.program,
-      },
+      this.program,
       this.test
     );
     const awaitedValue = await value;
@@ -288,12 +264,7 @@ export default class AppSdk {
   }
 
   async sellPrice() {
-    const { ixName, value } = getSellPrice(
-      {
-        program: this.program,
-      },
-      this.test
-    );
+    const { ixName, value } = getSellPrice(this.program, this.test);
     const awaitedValue = await value;
     if (BN.isBN(awaitedValue)) return awaitedValue;
 
@@ -301,12 +272,7 @@ export default class AppSdk {
   }
 
   async buyPrice() {
-    const { ixName, value } = getBuyPrice(
-      {
-        program: this.program,
-      },
-      this.test
-    );
+    const { ixName, value } = getBuyPrice(this.program, this.test);
     const awaitedValue = await value;
     if (BN.isBN(awaitedValue)) return awaitedValue;
 
@@ -316,9 +282,7 @@ export default class AppSdk {
   async calculateLamportsReceived(tokens: BN) {
     const { ixName, value } = getCalculateLamportsReceived(
       tokens,
-      {
-        program: this.program,
-      },
+      this.program,
       this.test
     );
     const awaitedValue = await value;
@@ -330,9 +294,7 @@ export default class AppSdk {
   async calculateTokensReceived(lamports: BN) {
     const { ixName, value } = getCalculateTokensReceived(
       lamports,
-      {
-        program: this.program,
-      },
+      this.program,
       this.test
     );
     const awaitedValue = await value;
