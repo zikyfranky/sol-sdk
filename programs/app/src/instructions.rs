@@ -59,7 +59,7 @@ pub struct Initialize<'info> {
     )]
     pub mint: UncheckedAccount<'info>,
 
-    #[account(init, seeds=[PROGRAM_SEED], bump, payer = admin, space = 8 + App::MAXIMUM_SIZE)]
+    #[account(init, seeds=[PROGRAM_SEED], bump, payer = admin, space = 8 + App::MAXIMUM_SIZE + 10)]
     pub program_data: Account<'info, App>,
     pub rent: Sysvar<'info, Rent>,
     /// CHECK: Sysvar instruction
