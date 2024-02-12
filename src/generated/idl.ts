@@ -12,11 +12,11 @@ const APP_IDL: Idl = {
           },
           {
             name: "balance",
-            type: "u64",
+            type: "u128",
           },
           {
             name: "referredBalance",
-            type: "u64",
+            type: "u128",
           },
           {
             name: "isAdmin",
@@ -28,11 +28,11 @@ const APP_IDL: Idl = {
           },
           {
             name: "ambassadorQuota",
-            type: "u64",
+            type: "u128",
           },
           {
             name: "payout",
-            type: "i64",
+            type: "i128",
           },
         ],
         kind: "struct",
@@ -60,19 +60,19 @@ const APP_IDL: Idl = {
           },
           {
             name: "tokenInitialPrice",
-            type: "u64",
+            type: "u128",
           },
           {
             name: "tokenIncrementalPrice",
-            type: "u64",
+            type: "u128",
           },
           {
             name: "contractBalance",
-            type: "u64",
+            type: "u128",
           },
           {
             name: "tokenSupply",
-            type: "u64",
+            type: "u128",
           },
           {
             name: "magnitude",
@@ -80,19 +80,19 @@ const APP_IDL: Idl = {
           },
           {
             name: "stakingRequirement",
-            type: "u64",
+            type: "u128",
           },
           {
             name: "ambassadorMaxPurchase",
-            type: "u64",
+            type: "u128",
           },
           {
             name: "ambassadorQuota",
-            type: "u64",
+            type: "u128",
           },
           {
             name: "profitPerShare",
-            type: "u64",
+            type: "u128",
           },
           {
             name: "onlyAmbassadors",
@@ -281,7 +281,7 @@ const APP_IDL: Idl = {
       args: [
         {
           name: "lamportsToSend",
-          type: "u64",
+          type: "u128",
         },
         {
           name: "referredBy",
@@ -449,7 +449,7 @@ const APP_IDL: Idl = {
         },
         {
           name: "lamportsToSend",
-          type: "u64",
+          type: "u128",
         },
       ],
       name: "transfer",
@@ -546,7 +546,7 @@ const APP_IDL: Idl = {
       args: [
         {
           name: "lamportsToSend",
-          type: "u64",
+          type: "u128",
         },
       ],
       name: "sell",
@@ -683,7 +683,7 @@ const APP_IDL: Idl = {
       args: [
         {
           name: "amountOfTokens",
-          type: "u64",
+          type: "u128",
         },
       ],
       name: "setStakingRequirement",
@@ -770,7 +770,7 @@ const APP_IDL: Idl = {
         },
       ],
       name: "myDividends",
-      returns: "u64",
+      returns: "u128",
     },
     {
       accounts: [
@@ -782,7 +782,7 @@ const APP_IDL: Idl = {
       ],
       args: [],
       name: "sellPrice",
-      returns: "u64",
+      returns: "u128",
     },
     {
       accounts: [
@@ -794,7 +794,7 @@ const APP_IDL: Idl = {
       ],
       args: [],
       name: "buyPrice",
-      returns: "u64",
+      returns: "u128",
     },
     {
       accounts: [
@@ -807,11 +807,11 @@ const APP_IDL: Idl = {
       args: [
         {
           name: "tokens",
-          type: "u64",
+          type: "u128",
         },
       ],
       name: "calculateLamportsReceived",
-      returns: "u64",
+      returns: "u128",
     },
     {
       accounts: [
@@ -824,11 +824,11 @@ const APP_IDL: Idl = {
       args: [
         {
           name: "lamports",
-          type: "u64",
+          type: "u128",
         },
       ],
       name: "calculateTokensReceived",
-      returns: "u64",
+      returns: "u128",
     },
   ],
   name: "app",

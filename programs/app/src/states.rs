@@ -1,13 +1,11 @@
 use {
-    crate::constants::MINT_SEED,
+    crate::constants::{LAMPORTS_IN_SOL, MINT_SEED},
     crate::errors::ProgramError,
     crate::events::*,
     crate::utils::*,
     anchor_lang::{
         prelude::*,
-        solana_program::{
-            native_token::LAMPORTS_PER_SOL, program::invoke, system_instruction::transfer,
-        },
+        solana_program::{program::invoke, system_instruction::transfer},
         AnchorDeserialize, AnchorSerialize,
     },
     anchor_spl::token_2022::{burn, mint_to, Burn, MintTo},
@@ -16,12 +14,12 @@ use {
 #[account]
 pub struct User {
     authority: Pubkey,
-    balance: u64,
-    referred_balance: u64,
+    balance: u128,
+    referred_balance: u128,
     is_admin: bool,
     is_amb: bool,
-    ambassador_quota: u64,
-    payout: i64,
+    ambassador_quota: u128,
+    payout: i128,
 }
 
 // Helper functions
@@ -38,39 +36,39 @@ impl User {
         self.balance > 0
     }
 
-    fn has_balance_upto(&mut self, amount: u64) -> bool {
+    fn has_balance_upto(&mut self, amount: u128) -> bool {
         self.balance >= amount
     }
 
-    fn increase_balance_by(&mut self, amount: u64) {
+    fn increase_balance_by(&mut self, amount: u128) {
         self.balance += amount;
     }
 
-    fn decrease_balance_by(&mut self, amount: u64) {
+    fn decrease_balance_by(&mut self, amount: u128) {
         self.balance -= amount;
     }
 
-    fn increase_payout_by(&mut self, amount: i64) {
+    fn increase_payout_by(&mut self, amount: i128) {
         self.payout += amount;
     }
 
-    fn decrease_payout_by(&mut self, amount: i64) {
+    fn decrease_payout_by(&mut self, amount: i128) {
         self.payout -= amount;
     }
 
-    fn increase_referred_balance_by(&mut self, amount: u64) {
+    fn increase_referred_balance_by(&mut self, amount: u128) {
         self.referred_balance += amount;
     }
 
-    fn decrease_referred_balance_by(&mut self, amount: u64) {
+    fn decrease_referred_balance_by(&mut self, amount: u128) {
         self.referred_balance -= amount;
     }
 
-    fn increase_ambassador_quota_by(&mut self, amount: u64) {
+    fn increase_ambassador_quota_by(&mut self, amount: u128) {
         self.ambassador_quota += amount;
     }
 
-    // fn decrease_ambassador_quota_by(&mut self, amount: u64) {
+    // fn decrease_ambassador_quota_by(&mut self, amount: u128) {
     // 	self.ambassador_quota -= amount;
     // }
 
@@ -84,7 +82,7 @@ impl User {
 }
 
 impl User {
-    pub const MAXIMUM_SIZE: usize = 32 + 8 + 8 + 1 + 1 + 8 + 8;
+    pub const MAXIMUM_SIZE: usize = 32 + 16 + 16 + 1 + 1 + 16 + 16;
 }
 
 #[account]
@@ -93,15 +91,15 @@ pub struct App {
     symbol: String,
     decimals: u8,
     dividend_fee: u8,
-    token_initial_price: u64,
-    token_incremental_price: u64,
-    contract_balance: u64,
-    token_supply: u64,
+    token_initial_price: u128,
+    token_incremental_price: u128,
+    contract_balance: u128,
+    token_supply: u128,
     magnitude: u64,
-    staking_requirement: u64,
-    ambassador_max_purchase: u64,
-    ambassador_quota: u64,
-    profit_per_share: u64,
+    staking_requirement: u128,
+    ambassador_max_purchase: u128,
+    ambassador_quota: u128,
+    profit_per_share: u128,
     only_ambassadors: bool,
     is_initialized: bool,
 }
@@ -127,7 +125,7 @@ impl App {
         administrators can:
         -> change the name of the contract
         -> change the name of the token
-        -> change the PoS difficulty (How many tokens it costs to hold a masternode, in case it gets crazy high later)
+        -> change the PoS difficulty (How many tokens it costs to hold a skwizkey, in case it gets crazy high later)
         they CANNOT:
         -> take funds
         -> disable withdrawals
@@ -147,7 +145,11 @@ impl App {
     // ensures that the first tokens in the contract will be equally distributed
     // meaning, no divine dump will be ever possible
     // result: healthy longevity.
-    fn anti_early_whale(&mut self, user: &mut Account<User>, amount_of_lamport: u64) -> Result<()> {
+    fn anti_early_whale(
+        &mut self,
+        user: &mut Account<User>,
+        amount_of_lamport: u128,
+    ) -> Result<()> {
         // are we still in the vulnerable phase?
         // if so, enact anti early whale protocol
         if self.only_ambassadors
@@ -174,7 +176,7 @@ impl App {
     }
 
     // Check that user has enough funds to use
-    fn has_enough(&mut self, user: &mut Account<User>, amount: u64) -> Result<()> {
+    fn has_enough(&mut self, user: &mut Account<User>, amount: u128) -> Result<()> {
         require!(
             user.has_balance_upto(amount),
             ProgramError::InsufficientBalance
@@ -197,7 +199,7 @@ impl App {
 impl App {
     fn mint<'a>(
         data_account: &mut Account<'_, User>,
-        quantity: u64,
+        quantity: u128,
         token_program: AccountInfo<'a>,
         mint: AccountInfo<'a>,
         user_ata: AccountInfo<'a>,
@@ -216,7 +218,7 @@ impl App {
                 },
                 &signer,
             ),
-            quantity,
+            quantity as u64,
         )?;
 
         data_account.increase_balance_by(quantity);
@@ -227,7 +229,7 @@ impl App {
     fn burn<'a>(
         signer: AccountInfo<'a>,
         data_account: &mut Account<'_, User>,
-        quantity: u64,
+        quantity: u128,
         token_program: AccountInfo<'a>,
         mint: AccountInfo<'a>,
         user_ata: AccountInfo<'a>,
@@ -246,7 +248,7 @@ impl App {
                     mint: mint.clone(),
                 },
             ),
-            quantity,
+            quantity as u64,
         )?;
 
         data_account.decrease_balance_by(quantity);
@@ -260,23 +262,23 @@ impl App {
         system: AccountInfo<'a>,
         buyer_data_account: &mut Account<'_, User>,
         referred_by_data_account: &mut Option<Account<'_, User>>,
-        lamports: u64,
+        lamports: u128,
         referred_by: Option<Pubkey>,
         direct_buy: bool,
         token_program: AccountInfo<'a>,
         mint: AccountInfo<'a>,
         user_ata: AccountInfo<'a>,
         bump: u8,
-    ) -> Result<u64> {
+    ) -> Result<u128> {
         program.anti_early_whale(buyer_data_account, lamports)?;
         // data setup
         let buyer_key = buyer.key();
-        let undivided_dividends = lamports / program.dividend_fee as u64;
+        let undivided_dividends = lamports / (program.dividend_fee as u128);
         let referral_bonus = undivided_dividends / 3;
         let mut dividends = undivided_dividends - referral_bonus;
-        let taxed_lamport: u64 = lamports - undivided_dividends;
+        let taxed_lamport = lamports - undivided_dividends;
         let amount_of_tokens = program.lamport_to_tokens(taxed_lamport);
-        let mut fee = dividends * program.magnitude;
+        let mut fee = dividends * program.magnitude as u128;
         let referred = referred_by.unwrap_or_default();
 
         // Lot of checks
@@ -285,7 +287,7 @@ impl App {
         require_gt!(amount_of_tokens, 0, ProgramError::SentLessToken);
         require_gte!(
             buyer.get_lamports(),
-            lamports,
+            lamports as u64,
             ProgramError::InsufficientBalance
         );
         require_gt!(
@@ -294,7 +296,7 @@ impl App {
             ProgramError::SentLessToken
         );
 
-        // is the user referred by a masternode?
+        // is the user referred by a skwizkey?
         if
         // is this a referred purchase?
         !Pubkey::default().eq(&referred) &&
@@ -303,30 +305,30 @@ impl App {
         {
             if let Some(referred_by_data) = referred_by_data_account {
                 // does the referrer have at least X whole tokens?
-                // i.e is the referrer a godly chad masternode
+                // i.e is the referrer a godly chad skwizkey
                 if referred_by_data.has_balance_upto(program.staking_requirement) {
                     // wealth redistribution
                     referred_by_data.increase_referred_balance_by(referral_bonus);
 
                     // Emit an event
-                    on_masternode(referred, buyer_key, lamports, referral_bonus);
+                    on_skwizkey(referred, buyer_key, lamports, referral_bonus);
                 } else {
                     // no ref purchase
                     // add the referral bonus back to the global dividends cake
                     dividends += referral_bonus;
-                    fee = dividends * program.magnitude;
+                    fee = dividends * program.magnitude as u128;
                 }
             } else {
                 // no ref purchase
                 // add the referral bonus back to the global dividends cake
                 dividends += referral_bonus;
-                fee = dividends * program.magnitude;
+                fee = dividends * program.magnitude as u128;
             }
         } else {
             // no ref purchase
             // add the referral bonus back to the global dividends cake
             dividends += referral_bonus;
-            fee = dividends * program.magnitude;
+            fee = dividends * program.magnitude as u128;
         }
 
         // we can't give people infinite ethereum
@@ -335,13 +337,14 @@ impl App {
             program.token_supply += amount_of_tokens;
 
             // take the amount of dividends gained through this transaction, and allocates them evenly to each shareholder
-            program.profit_per_share += (dividends * program.magnitude) / (program.token_supply);
+            program.profit_per_share +=
+                (dividends * program.magnitude as u128) / (program.token_supply);
 
             // calculate the amount of tokens the customer receives over his purchase
             fee = fee
                 - (fee
                     - (amount_of_tokens
-                        * ((dividends * program.magnitude) / (program.token_supply))));
+                        * ((dividends * program.magnitude as u128) / (program.token_supply))));
         } else {
             // add tokens to the pool
             program.token_supply = amount_of_tokens;
@@ -359,8 +362,8 @@ impl App {
 
         // Tells the contract that the buyer doesn't deserve dividends for the tokens before they owned them;
         //really i know you think you do but you don't
-        let updated_payouts =
-            ((program.profit_per_share * amount_of_tokens) as i64 - fee as i64) as i64;
+        let updated_payouts: i128 =
+            ((program.profit_per_share * amount_of_tokens) as i128 - fee as i128) as i128;
 
         buyer_data_account.increase_payout_by(updated_payouts);
 
@@ -368,7 +371,7 @@ impl App {
         on_token_purchase(buyer_key, lamports, amount_of_tokens, referred);
 
         if direct_buy {
-            App::transfer_sol_in(buyer, program, system, lamports)?;
+            App::transfer_sol_in(buyer, program, system, lamports as u64)?;
         }
 
         Ok(amount_of_tokens)
@@ -379,14 +382,14 @@ impl App {
      * It's an algorithm, hopefully we gave you the whitepaper with it in scientific notation;
      * Some conversions occurred to prevent decimal errors or underflows / overflows in solidity code.
      */
-    fn lamport_to_tokens(&mut self, lamport: u64) -> u64 {
-        let token_price_initial = self.token_initial_price as u128; // 100
-        let token_price_incremental = self.token_incremental_price as u128; // 1000
-        let token_supply = self.token_supply as u128; // 0
+    fn lamport_to_tokens(&mut self, lamport: u128) -> u128 {
+        let token_price_initial = self.token_initial_price; // 100
+        let token_price_incremental = self.token_incremental_price; // 1000
+        let token_supply = self.token_supply; // 0
 
-        let token_price_initial_expanded = token_price_initial * LAMPORTS_PER_SOL as u128; //100 * 1e9  = 100e9
-        let token_price_incremental_expanded = token_price_incremental * LAMPORTS_PER_SOL as u128; //1000 * 1e9  = 1000e9
-        let lamport_expanded = lamport as u128 * LAMPORTS_PER_SOL as u128; //1e9*1e9 =  1e18
+        let token_price_initial_expanded = token_price_initial * LAMPORTS_IN_SOL; //100 * 1e9  = 100e9
+        let token_price_incremental_expanded = token_price_incremental * LAMPORTS_IN_SOL; //1000 * 1e9  = 1000e9
+        let lamport_expanded = lamport * LAMPORTS_IN_SOL; //1e9*1e9 =  1e18
 
         let token_price_initial_to_power = token_price_initial_expanded.pow(2);
         let token_price_incremental_to_power = token_price_incremental.pow(2);
@@ -398,9 +401,8 @@ impl App {
         let fourth = 2 * token_price_incremental * token_price_initial_expanded * token_supply;
 
         let square_root = sqrt(first + second + third + fourth);
-        let tokens_received = (((square_root - token_price_initial_expanded)
-            / token_price_incremental)
-            - token_supply) as u64;
+        let tokens_received =
+            ((square_root - token_price_initial_expanded) / token_price_incremental) - token_supply;
 
         tokens_received
     }
@@ -410,32 +412,32 @@ impl App {
      * It's an algorithm, hopefully we gave you the whitepaper with it in scientific notation;
      * Some conversions occurred to prevent decimal errors or underflows / overflows in solidity code.
      */
-    fn tokens_to_lamport(&mut self, tokens: u64) -> u64 {
-        let lam_to_sol = LAMPORTS_PER_SOL as u128;
+    fn tokens_to_lamport(&mut self, tokens: u128) -> u128 {
+        let tokens = tokens + LAMPORTS_IN_SOL;
+        let token_supply = self.token_supply + LAMPORTS_IN_SOL;
 
-        let tokens = tokens as u128 + lam_to_sol;
-        let token_supply = self.token_supply as u128 + lam_to_sol;
+        let token_initial_price = self.token_initial_price;
+        let token_incremental_price = self.token_incremental_price;
 
-        let token_initial_price = self.token_initial_price as u128;
-        let token_incremental_price = self.token_incremental_price as u128;
-
-        let first = (token_initial_price + (token_incremental_price * (token_supply / lam_to_sol)))
+        let first = (token_initial_price
+            + (token_incremental_price * (token_supply / LAMPORTS_IN_SOL)))
             - token_incremental_price;
 
-        let second = tokens - lam_to_sol;
-        let third = token_incremental_price * ((tokens.pow(2) - tokens) / lam_to_sol) / 2;
+        let second = tokens - LAMPORTS_IN_SOL;
+        let third = token_incremental_price * ((tokens.pow(2) - tokens) / LAMPORTS_IN_SOL) / 2;
 
         // underflow attempts BTFO
-        let lamport_to_receive = ((first * second) - (third)) / lam_to_sol;
+        let lamport_to_receive = ((first * second) - (third)) / LAMPORTS_IN_SOL;
 
-        lamport_to_receive as u64
+        lamport_to_receive
     }
 
     /**
      * Retrieve the dividend balance of any single address.
      */
-    fn dividends_of(&mut self, user: &Account<User>) -> u64 {
-        ((((self.profit_per_share * user.balance) as i64) - user.payout) as u64) / self.magnitude
+    fn dividends_of(&mut self, user: &Account<User>) -> u128 {
+        ((((self.profit_per_share * user.balance) as i128) - user.payout) / self.magnitude as i128)
+            as u128
     }
 
     fn transfer_sol_out(
@@ -445,10 +447,10 @@ impl App {
         amount: u64,
     ) -> Result<bool> {
         require!(
-            amount <= from.contract_balance,
+            amount <= from.contract_balance as u64,
             ProgramError::InsufficientBalance
         );
-        from.contract_balance -= amount;
+        from.contract_balance -= amount as u128;
 
         // let _from = from.to_account_info();
         // let _to = to.to_account_info();
@@ -470,7 +472,7 @@ impl App {
             amount <= from.get_lamports(),
             ProgramError::InsufficientBalance
         );
-        to.contract_balance += amount;
+        to.contract_balance += amount as u128;
 
         let ix = transfer(&from.key(), &to.key(), amount);
 
@@ -532,12 +534,12 @@ impl App {
     }
 
     /**
-     * Precautionary measures in case we need to adjust the masternode rate.
+     * Precautionary measures in case we need to adjust the skwizkey rate.
      */
     pub fn set_staking_requirement(
         program: &mut Account<App>,
         admin: &mut Account<User>,
-        amount_of_tokens: u64,
+        amount_of_tokens: u128,
     ) -> Result<()> {
         program.check_admin_rights(admin)?;
         program.staking_requirement = amount_of_tokens;
@@ -547,40 +549,13 @@ impl App {
 
     /**
      * Updates information of the metadata of mint
+     * @TODO: Update token information
      */
     pub fn update_metadata_account(
         program: &mut Account<App>,
         admin: &mut Account<User>,
     ) -> Result<()> {
         program.check_admin_rights(admin)?;
-        Ok(())
-    }
-
-    /**
-     * If we want to rebrand, we can.
-     */
-    pub fn set_name(
-        program: &mut Account<App>,
-        admin: &mut Account<User>,
-        new_name: String,
-    ) -> Result<()> {
-        program.check_admin_rights(admin)?;
-        program.name = new_name;
-
-        Ok(())
-    }
-
-    /**
-     * If we want to rebrand, we can.
-     */
-    pub fn set_symbol(
-        program: &mut Account<App>,
-        admin: &mut Account<User>,
-        new_symbol: String,
-    ) -> Result<()> {
-        program.check_admin_rights(admin)?;
-        program.symbol = new_symbol;
-
         Ok(())
     }
 }
@@ -597,7 +572,7 @@ impl App {
         program: &mut Account<App>,
         user: &Account<User>,
         include_referral_bonus: bool,
-    ) -> u64 {
+    ) -> u128 {
         if include_referral_bonus {
             program.dividends_of(user) + user.referred_balance
         } else {
@@ -608,14 +583,14 @@ impl App {
     /**
      * Return the buy price of 1 individual token.
      */
-    pub fn sell_price(&mut self) -> u64 {
+    pub fn sell_price(&mut self) -> u128 {
         // our calculation relies on the token supply, so we need supply. Doh.
         if self.token_supply == 0 {
-            return 0;
+            self.token_initial_price - self.token_incremental_price
         } else {
-            let lamport: u64 = self.tokens_to_lamport(u64::pow(10, self.decimals as u32));
-            let dividends: u64 = lamport / (self.dividend_fee) as u64;
-            let taxed_lamport: u64 = lamport - (dividends);
+            let lamport: u128 = self.tokens_to_lamport(u128::pow(10, self.decimals as u32));
+            let dividends: u128 = lamport / (self.dividend_fee) as u128;
+            let taxed_lamport: u128 = lamport - (dividends);
             taxed_lamport
         }
     }
@@ -623,14 +598,14 @@ impl App {
     /**
      * Return the sell price of 1 individual token.
      */
-    pub fn buy_price(&mut self) -> u64 {
+    pub fn buy_price(&mut self) -> u128 {
         // our calculation relies on the token supply, so we need supply. Doh.
         if self.token_supply == 0 {
             self.token_initial_price + self.token_incremental_price
         } else {
-            let lamport: u64 = self.tokens_to_lamport(u64::pow(10, self.decimals as u32));
-            let dividends: u64 = lamport / (self.dividend_fee) as u64;
-            let taxed_lamport: u64 = lamport - (dividends);
+            let lamport: u128 = self.tokens_to_lamport(u128::pow(10, self.decimals as u32));
+            let dividends: u128 = lamport / (self.dividend_fee) as u128;
+            let taxed_lamport: u128 = lamport - (dividends);
             taxed_lamport
         }
     }
@@ -638,13 +613,13 @@ impl App {
     /**
      * Function for the frontend to dynamically retrieve the price scaling of buy orders.
      */
-    pub fn calculate_tokens_received(&mut self, lamport_to_spend: u64) -> u64 {
+    pub fn calculate_tokens_received(&mut self, lamport_to_spend: u128) -> u128 {
         if lamport_to_spend == 0 {
             return 0;
         }
-        let dividends: u64 = lamport_to_spend / (self.dividend_fee as u64);
-        let taxed_lamport: u64 = lamport_to_spend - dividends;
-        let amount_of_tokens: u64 = self.lamport_to_tokens(taxed_lamport);
+        let dividends: u128 = lamport_to_spend / (self.dividend_fee as u128);
+        let taxed_lamport: u128 = lamport_to_spend - dividends;
+        let amount_of_tokens: u128 = self.lamport_to_tokens(taxed_lamport);
 
         amount_of_tokens
     }
@@ -652,13 +627,13 @@ impl App {
     /**
      * Function for the frontend to dynamically retrieve the price scaling of sell orders.
      */
-    pub fn calculate_lamports_received(&mut self, token_to_sell: u64) -> u64 {
+    pub fn calculate_lamports_received(&mut self, token_to_sell: u128) -> u128 {
         if token_to_sell > self.token_supply || token_to_sell == 0 {
             return 0;
         }
         let lamport = self.tokens_to_lamport(token_to_sell);
-        let dividends: u64 = lamport / (self.dividend_fee as u64);
-        let taxed_lamport: u64 = lamport - (dividends);
+        let dividends: u128 = lamport / (self.dividend_fee as u128);
+        let taxed_lamport: u128 = lamport - (dividends);
 
         taxed_lamport
     }
@@ -666,7 +641,7 @@ impl App {
 
 // CONSTANTS
 impl App {
-    pub const MAXIMUM_SIZE: usize = 1 + 1 + 8 + 8 + 8 + 8 + 8 + 8 + 8 + 8 + 8 + 1 + 1 + 20; //  20 bytes for token name and symbol
+    pub const MAXIMUM_SIZE: usize = 1 + 1 + 16 + 16 + 16 + 16 + 8 + 16 + 16 + 16 + 16 + 1 + 1 + 20; //  20 bytes for token name and symbol
 }
 
 // Public functions
@@ -688,13 +663,12 @@ impl App {
         program.decimals = decimals;
         program.dividend_fee = 10;
         program.token_initial_price = 100000;
-        program.token_incremental_price = 10000;
-        program.token_supply = 0;
+        // program.token_incremental_price = 10000;
+        program.token_incremental_price = 100;
         program.magnitude = u64::pow(2, 32);
         program.staking_requirement = 2000_000_000_000;
-        program.ambassador_max_purchase = LAMPORTS_PER_SOL;
-        program.ambassador_quota = LAMPORTS_PER_SOL * 20;
-        program.profit_per_share = 0;
+        program.ambassador_max_purchase = LAMPORTS_IN_SOL;
+        program.ambassador_quota = LAMPORTS_IN_SOL * 20;
         program.only_ambassadors = true;
         program.is_initialized = true;
 
@@ -715,14 +689,14 @@ impl App {
         buyer: &mut Signer<'a>,
         buyer_data_account: &mut Account<'_, User>,
         referred_by_data_account: &mut Option<Account<'_, User>>,
-        lamports: u64,
+        lamports: u128,
         referred_by: Option<Pubkey>,
         sys_info: AccountInfo<'a>,
         token_program: AccountInfo<'a>,
         mint: AccountInfo<'a>,
         user_ata: AccountInfo<'a>,
         bump: u8,
-    ) -> Result<u64> {
+    ) -> Result<u128> {
         if buyer_data_account
             .authority
             .key()
@@ -842,7 +816,7 @@ impl App {
         to: Pubkey,
         to_data_account: &mut Account<'a, User>,
         to_ata: AccountInfo<'a>,
-        amount_of_tokens: u64,
+        amount_of_tokens: u128,
         token_program: AccountInfo<'a>,
         mint: AccountInfo<'a>,
         bump: u8,
@@ -874,7 +848,7 @@ impl App {
         // ( we dont want whale premines )
         require!(!program.only_ambassadors, ProgramError::AmbassadorPhase);
 
-        let mut trans_amount: u64 = 0;
+        let mut trans_amount: u128 = 0;
         // withdraw all outstanding dividends first
         if App::my_dividends(program, user_data_account, true) > 0 {
             trans_amount = App::withdraw(program, user, user_data_account, false)?;
@@ -882,7 +856,7 @@ impl App {
 
         // liquify 10% of the tokens that are transfered
         // these are dispersed to shareholders
-        let token_fee = amount_of_tokens / (program.dividend_fee) as u64;
+        let token_fee = amount_of_tokens / (program.dividend_fee as u128);
         let taxed_tokens = amount_of_tokens - token_fee;
         let _dividends = App::tokens_to_lamport(program, token_fee);
 
@@ -908,14 +882,14 @@ impl App {
         )?;
 
         // update dividend trackers
-        let from_payouts = (program.profit_per_share * amount_of_tokens) as i64;
-        let to_payouts = (program.profit_per_share * taxed_tokens) as i64;
+        let from_payouts = (program.profit_per_share * amount_of_tokens) as i128;
+        let to_payouts = (program.profit_per_share * taxed_tokens) as i128;
 
         user_data_account.decrease_payout_by(from_payouts);
         to_data_account.increase_payout_by(to_payouts);
 
         // disperse dividends among holders
-        program.profit_per_share += (_dividends * program.magnitude) / program.token_supply;
+        program.profit_per_share += (_dividends * program.magnitude as u128) / program.token_supply;
 
         // fire event
         on_transfer(
@@ -924,7 +898,7 @@ impl App {
             amount_of_tokens,
         );
 
-        App::transfer_sol_out(program, user, trans_amount)?;
+        App::transfer_sol_out(program, user, trans_amount as u64)?;
 
         Ok(true)
     }
@@ -937,7 +911,7 @@ impl App {
         user: &mut Signer,
         user_data_account: &mut Account<'_, User>,
         direct_call: bool,
-    ) -> Result<u64> {
+    ) -> Result<u128> {
         if user_data_account
             .authority
             .key()
@@ -950,7 +924,7 @@ impl App {
 
         let mut dividends = App::my_dividends(program, user_data_account, false); // get ref. bonus later in the code
 
-        let updated_payouts = (dividends * program.magnitude) as i64;
+        let updated_payouts = (dividends * program.magnitude as u128) as i128;
         // update dividend tracker
         user_data_account.increase_payout_by(updated_payouts);
 
@@ -962,7 +936,7 @@ impl App {
         // lambo delivery service
         // Transfer from the app state
         if direct_call {
-            App::transfer_sol_out(program, user, dividends)?;
+            App::transfer_sol_out(program, user, dividends as u64)?;
         }
 
         // fire event
@@ -978,7 +952,7 @@ impl App {
         program: &mut Account<'a, App>,
         user: &Signer<'a>,
         user_data_account: &mut Account<'a, User>,
-        amount_of_tokens: u64,
+        amount_of_tokens: u128,
         token_program: AccountInfo<'a>,
         mint: AccountInfo<'a>,
         user_ata: AccountInfo<'a>,
@@ -999,7 +973,7 @@ impl App {
 
         let tokens = amount_of_tokens;
         let _lamport = App::tokens_to_lamport(program, tokens);
-        let dividends = _lamport / program.dividend_fee as u64;
+        let dividends = _lamport / program.dividend_fee as u128;
         let taxed_lamport = _lamport - dividends;
 
         // burn the sold tokens
@@ -1015,14 +989,16 @@ impl App {
         )?;
 
         // update dividends tracker
-        let updated_payouts =
-            (program.profit_per_share * tokens + (taxed_lamport * program.magnitude)) as i64;
+        let updated_payouts = (program.profit_per_share as i128 * tokens as i128
+            + (taxed_lamport as i128 * program.magnitude as i128))
+            as i128;
         user_data_account.decrease_payout_by(updated_payouts);
 
         // dividing by zero is a bad idea
         if program.token_supply > 0 {
             // update the amount of dividends per token
-            program.profit_per_share += (dividends * program.magnitude) / program.token_supply;
+            program.profit_per_share +=
+                (dividends * program.magnitude as u128) / program.token_supply;
         }
 
         // fire event

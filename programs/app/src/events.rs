@@ -5,8 +5,8 @@ use anchor_lang::prelude::*;
 ==============================*/
 pub fn on_token_purchase(
     customer_address: Pubkey,
-    incoming_lamports: u64,
-    tokens_minted: u64,
+    incoming_lamports: u128,
+    tokens_minted: u128,
     referred_by: Pubkey,
 ) -> bool {
     // Emit a message for TokenPurchase event
@@ -21,7 +21,7 @@ pub fn on_token_purchase(
     true
 }
 
-pub fn on_token_sell(customer_address: Pubkey, tokens_burned: u64, lamports_earned: u64) -> bool {
+pub fn on_token_sell(customer_address: Pubkey, tokens_burned: u128, lamports_earned: u128) -> bool {
     // Emit a message for TokenSell event
     msg!(
         "TokenSell: Customer={}, Tokens={}, Lamports={}",
@@ -35,8 +35,8 @@ pub fn on_token_sell(customer_address: Pubkey, tokens_burned: u64, lamports_earn
 
 pub fn on_reinvestment(
     customer_address: Pubkey,
-    lamports_reinvested: u64,
-    tokens_minted: u64,
+    lamports_reinvested: u128,
+    tokens_minted: u128,
 ) -> bool {
     // Emit a message for Reinvestment event
     msg!(
@@ -49,7 +49,7 @@ pub fn on_reinvestment(
     true
 }
 
-pub fn on_withdraw(customer_address: Pubkey, lamports_withdrawn: u64) -> bool {
+pub fn on_withdraw(customer_address: Pubkey, lamports_withdrawn: u128) -> bool {
     // Emit a message for Withdraw event
     msg!(
         "Withdraw: Customer={}, Lamports={}",
@@ -60,15 +60,15 @@ pub fn on_withdraw(customer_address: Pubkey, lamports_withdrawn: u64) -> bool {
     true
 }
 
-pub fn on_masternode(
+pub fn on_skwizkey(
     customer_address: Pubkey,
     consumer_address: Pubkey,
-    lamport_used: u64,
-    bonus_received: u64,
+    lamport_used: u128,
+    bonus_received: u128,
 ) -> bool {
-    // Emit a message for Masternode event
+    // Emit a message for Skwizkey event
     msg!(
-        "Masternode: Customer={}, Consumer={}, Lamports={}, Bonus={}",
+        "Skwizkey: Customer={}, Consumer={}, Lamports={}, Bonus={}",
         customer_address,
         consumer_address,
         lamport_used,
@@ -78,7 +78,7 @@ pub fn on_masternode(
     true
 }
 
-pub fn on_transfer(from: Pubkey, to: Pubkey, tokens: u64) -> bool {
+pub fn on_transfer(from: Pubkey, to: Pubkey, tokens: u128) -> bool {
     // Emit a message for Transfer event
     msg!("Transfer: From={}, To={}, Tokens={}", from, to, tokens);
 

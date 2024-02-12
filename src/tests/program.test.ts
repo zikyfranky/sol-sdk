@@ -167,32 +167,34 @@ describe("Program", () => {
 
   describe("Can call readonly functions", () => {
     it("My dividends", async () => {
-      const value = await sdk.myDividends(USER.publicKey, true);
+      const { logs, value } = await sdk.myDividends(USER.publicKey, true);
 
       expect(value.toNumber()).toBeGreaterThan(0);
     });
 
     it("Sell Price", async () => {
-      const value = await sdk.sellPrice();
+      const { logs, value } = await sdk.sellPrice();
 
       expect(value.toNumber()).toBeGreaterThan(0);
     });
 
     it("Buy price", async () => {
-      const value = await sdk.buyPrice();
+      const { logs, value } = await sdk.buyPrice();
 
       expect(value.toNumber()).toBeGreaterThan(0);
     });
 
     it("calculate lamports to receive for x tokens", async () => {
-      const value = await sdk.calculateLamportsReceived(
+      const { logs, value } = await sdk.calculateLamportsReceived(
         new BN(LAMPORTS_PER_SOL)
       );
       expect(value.toNumber()).toBeGreaterThan(0);
     });
 
     it("calculate tokens to receive for x lamports", async () => {
-      const value = await sdk.calculateTokensReceived(new BN(LAMPORTS_PER_SOL));
+      const { logs, value } = await sdk.calculateTokensReceived(
+        new BN(LAMPORTS_PER_SOL)
+      );
       expect(value.toNumber()).toBeGreaterThan(0);
     });
   });

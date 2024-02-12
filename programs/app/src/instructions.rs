@@ -73,7 +73,7 @@ pub struct Initialize<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(lamports_to_send: u64, referred_by: Option<Pubkey>,)]
+#[instruction(lamports_to_send: u128, referred_by: Option<Pubkey>,)]
 pub struct Buy<'info> {
     #[account(
     	mut,
@@ -408,7 +408,7 @@ pub fn _initialize(ctx: Context<Initialize>, params: InitTokenParams) -> Result<
     Ok(())
 }
 
-pub fn _buy(ctx: Context<Buy>, lamports_to_send: u64, referred_by: Option<Pubkey>) -> Result<()> {
+pub fn _buy(ctx: Context<Buy>, lamports_to_send: u128, referred_by: Option<Pubkey>) -> Result<()> {
     let program = &mut ctx.accounts.program_data;
     let buyer = &mut ctx.accounts.user;
     let buyer_data_account = &mut ctx.accounts.user_data;
@@ -479,7 +479,7 @@ pub fn _exit(ctx: Context<Exit>) -> Result<()> {
     Ok(())
 }
 
-pub fn _transfer(ctx: Context<Transfer>, to: Pubkey, tokens_to_send: u64) -> Result<()> {
+pub fn _transfer(ctx: Context<Transfer>, to: Pubkey, tokens_to_send: u128) -> Result<()> {
     let program = &mut ctx.accounts.program_data;
     let user = &mut ctx.accounts.user;
     let user_data_account = &mut ctx.accounts.user_data;
@@ -515,7 +515,7 @@ pub fn _withdraw(ctx: Context<Withdraw>) -> Result<()> {
     Ok(())
 }
 
-pub fn _sell(ctx: Context<Sell>, lamports_to_send: u64) -> Result<()> {
+pub fn _sell(ctx: Context<Sell>, lamports_to_send: u128) -> Result<()> {
     let program = &mut ctx.accounts.program_data;
     let user = &mut ctx.accounts.user;
     let user_data_account = &mut ctx.accounts.user_data;
@@ -561,46 +561,32 @@ pub fn _set_ambassador(ctx: Context<AdminSetter>, _user: Pubkey, status: bool) -
     Ok(())
 }
 
-pub fn _set_staking_requirement(ctx: Context<Admin>, amount_of_tokens: u64) -> Result<()> {
+pub fn _set_staking_requirement(ctx: Context<Admin>, amount_of_tokens: u128) -> Result<()> {
     let user_data_account = &mut ctx.accounts.user_data;
     let program = &mut ctx.accounts.program_data;
     App::set_staking_requirement(program, user_data_account, amount_of_tokens)?;
     Ok(())
 }
 
-pub fn _set_name(ctx: Context<Admin>, new_name: String) -> Result<()> {
-    let user_data_account = &mut ctx.accounts.user_data;
-    let program = &mut ctx.accounts.program_data;
-    App::set_name(program, user_data_account, new_name)?;
-    Ok(())
-}
-
-pub fn _set_symbol(ctx: Context<Admin>, new_symbol: String) -> Result<()> {
-    let user_data_account = &mut ctx.accounts.user_data;
-    let program = &mut ctx.accounts.program_data;
-    App::set_symbol(program, user_data_account, new_symbol)?;
-    Ok(())
-}
-
 // READ ONLY INSTRUCTIONS
-pub fn _my_dividends(ctx: Context<ReadOnly>, including_ref: bool) -> Result<u64> {
+pub fn _my_dividends(ctx: Context<ReadOnly>, including_ref: bool) -> Result<u128> {
     let user_data_account = &ctx.accounts.user_data;
     let program = &mut ctx.accounts.program_data;
     let value = App::my_dividends(program, user_data_account, including_ref);
     Ok(value)
 }
 
-pub fn _sell_price(ctx: Context<ProgramReadOnly>) -> Result<u64> {
+pub fn _sell_price(ctx: Context<ProgramReadOnly>) -> Result<u128> {
     let value = ctx.accounts.program_data.sell_price();
     Ok(value)
 }
 
-pub fn _buy_price(ctx: Context<ProgramReadOnly>) -> Result<u64> {
+pub fn _buy_price(ctx: Context<ProgramReadOnly>) -> Result<u128> {
     let value = ctx.accounts.program_data.buy_price();
     Ok(value)
 }
 
-pub fn _calculate_lamports_received(ctx: Context<ProgramReadOnly>, tokens: u64) -> Result<u64> {
+pub fn _calculate_lamports_received(ctx: Context<ProgramReadOnly>, tokens: u128) -> Result<u128> {
     let value = ctx
         .accounts
         .program_data
@@ -609,7 +595,7 @@ pub fn _calculate_lamports_received(ctx: Context<ProgramReadOnly>, tokens: u64) 
     Ok(value)
 }
 
-pub fn _calculate_tokens_received(ctx: Context<ProgramReadOnly>, lamports: u64) -> Result<u64> {
+pub fn _calculate_tokens_received(ctx: Context<ProgramReadOnly>, lamports: u128) -> Result<u128> {
     let value = ctx
         .accounts
         .program_data

@@ -191,11 +191,11 @@ export default class AppSdk {
   async readOnly(
     ix: TransactionInstruction,
     ixName: string
-  ): Promise<any | null> {
+  ): Promise<{ logs: Array<string>; value: any }> {
     const ixx = IDL.instructions.find((i) => i.name == ixName);
     const isMut = ixx && [...ixx.accounts].find((a: any) => a.isMut);
     const returnType = ixx && (ixx as any).returns;
-    if (isMut || !returnType) return null;
+    if (isMut || !returnType) return { logs: [], value: null };
 
     const { blockhash } = await this.connection.getLatestBlockhash();
 
@@ -210,15 +210,21 @@ export default class AppSdk {
     const sim = await this.connection.simulateTransaction(tx);
 
     if (sim.value.err) {
+      let err;
       if (sim.value.logs && sim.value.logs.length > 0) {
         for (let i = 0; i < sim.value.logs!.length; i++) {
           const log = sim.value.logs![i];
           if (log?.includes("Error")) {
-            throw new Error(log.split("Error Message: ")[1]);
+            err = new Error(log.split("Error Message: ")[1]);
           }
         }
+      } else {
+        err = new Error(JSON.stringify(sim.value.err));
       }
-      throw new Error(JSON.stringify(sim.value.err));
+
+      err = err || new Error("Unknown Error");
+      (err as any).logs = sim.value.logs || [];
+      throw err;
     }
 
     let base64: Buffer | null = null;
@@ -237,14 +243,14 @@ export default class AppSdk {
       }
     }
 
-    if (!base64) return null;
+    if (!base64) return { logs: sim.value.logs || [], value: null };
 
     const coder = IdlCoder.fieldLayout(
       { type: returnType },
       Array.from([...(IDL.accounts ?? [])])
     );
 
-    return coder.decode(base64);
+    return { logs: sim.value.logs || [], value: coder.decode(base64) };
   }
 
   //
@@ -258,7 +264,7 @@ export default class AppSdk {
       this.test
     );
     const awaitedValue = await value;
-    if (BN.isBN(awaitedValue)) return awaitedValue;
+    if (BN.isBN(awaitedValue)) return { logs: [], value: awaitedValue };
 
     return this.readOnly(awaitedValue, ixName);
   }
@@ -266,7 +272,7 @@ export default class AppSdk {
   async sellPrice() {
     const { ixName, value } = getSellPrice(this.program, this.test);
     const awaitedValue = await value;
-    if (BN.isBN(awaitedValue)) return awaitedValue;
+    if (BN.isBN(awaitedValue)) return { logs: [], value: awaitedValue };
 
     return this.readOnly(awaitedValue, ixName);
   }
@@ -274,7 +280,7 @@ export default class AppSdk {
   async buyPrice() {
     const { ixName, value } = getBuyPrice(this.program, this.test);
     const awaitedValue = await value;
-    if (BN.isBN(awaitedValue)) return awaitedValue;
+    if (BN.isBN(awaitedValue)) return { logs: [], value: awaitedValue };
 
     return this.readOnly(awaitedValue, ixName);
   }
@@ -286,7 +292,7 @@ export default class AppSdk {
       this.test
     );
     const awaitedValue = await value;
-    if (BN.isBN(awaitedValue)) return awaitedValue;
+    if (BN.isBN(awaitedValue)) return { logs: [], value: awaitedValue };
 
     return this.readOnly(awaitedValue, ixName);
   }
@@ -299,7 +305,7 @@ export default class AppSdk {
     );
     const awaitedValue = await value;
 
-    if (BN.isBN(awaitedValue)) return awaitedValue;
+    if (BN.isBN(awaitedValue)) return { logs: [], value: awaitedValue };
 
     return this.readOnly(awaitedValue, ixName);
   }

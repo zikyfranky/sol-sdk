@@ -10,7 +10,7 @@ use {
     anchor_lang::{prelude::*, AnchorDeserialize, AnchorSerialize},
 };
 
-declare_id!("8yCmCyhDsLzof54Pbuj2dBxAKSyLosdFcR7Aov894NJk");
+declare_id!("9dkCqZK1LLrDcxRvb9tMH1adDpVkZXHFK1JowYNyUQ7o");
 
 #[program]
 pub mod app {
@@ -22,7 +22,7 @@ pub mod app {
 
     pub fn buy(
         ctx: Context<Buy>,
-        lamports_to_send: u64,
+        lamports_to_send: u128,
         referred_by: Option<Pubkey>,
     ) -> Result<()> {
         _buy(ctx, lamports_to_send, referred_by)
@@ -36,7 +36,7 @@ pub mod app {
         _exit(ctx)
     }
 
-    pub fn transfer(ctx: Context<Transfer>, to: Pubkey, lamports_to_send: u64) -> Result<()> {
+    pub fn transfer(ctx: Context<Transfer>, to: Pubkey, lamports_to_send: u128) -> Result<()> {
         _transfer(ctx, to, lamports_to_send)
     }
 
@@ -44,7 +44,7 @@ pub mod app {
         _withdraw(ctx)
     }
 
-    pub fn sell(ctx: Context<Sell>, lamports_to_send: u64) -> Result<()> {
+    pub fn sell(ctx: Context<Sell>, lamports_to_send: u128) -> Result<()> {
         _sell(ctx, lamports_to_send)
     }
 
@@ -61,36 +61,34 @@ pub mod app {
         _set_ambassador(ctx, user, status)
     }
 
-    pub fn set_staking_requirement(ctx: Context<Admin>, amount_of_tokens: u64) -> Result<()> {
+    pub fn set_staking_requirement(ctx: Context<Admin>, amount_of_tokens: u128) -> Result<()> {
         _set_staking_requirement(ctx, amount_of_tokens)
     }
 
-    pub fn set_name(ctx: Context<Admin>, name: String) -> Result<()> {
-        _set_name(ctx, name)
-    }
-
-    pub fn set_symbol(ctx: Context<Admin>, symbol: String) -> Result<()> {
-        _set_symbol(ctx, symbol)
-    }
-
     // Read only instructions
-    pub fn my_dividends(ctx: Context<ReadOnly>, including_ref: bool) -> Result<u64> {
+    pub fn my_dividends(ctx: Context<ReadOnly>, including_ref: bool) -> Result<u128> {
         _my_dividends(ctx, including_ref)
     }
 
-    pub fn sell_price(ctx: Context<ProgramReadOnly>) -> Result<u64> {
+    pub fn sell_price(ctx: Context<ProgramReadOnly>) -> Result<u128> {
         _sell_price(ctx)
     }
 
-    pub fn buy_price(ctx: Context<ProgramReadOnly>) -> Result<u64> {
+    pub fn buy_price(ctx: Context<ProgramReadOnly>) -> Result<u128> {
         _buy_price(ctx)
     }
 
-    pub fn calculate_lamports_received(ctx: Context<ProgramReadOnly>, tokens: u64) -> Result<u64> {
+    pub fn calculate_lamports_received(
+        ctx: Context<ProgramReadOnly>,
+        tokens: u128,
+    ) -> Result<u128> {
         _calculate_lamports_received(ctx, tokens)
     }
 
-    pub fn calculate_tokens_received(ctx: Context<ProgramReadOnly>, lamports: u64) -> Result<u64> {
+    pub fn calculate_tokens_received(
+        ctx: Context<ProgramReadOnly>,
+        lamports: u128,
+    ) -> Result<u128> {
         _calculate_tokens_received(ctx, lamports)
     }
 }
