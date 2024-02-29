@@ -6,6 +6,7 @@ import { decode } from "@coral-xyz/anchor/dist/cjs/utils/bytes/base64";
 import {
   Connection,
   PublicKey,
+  Transaction,
   TransactionInstruction,
   TransactionMessage,
   VersionedTransaction,
@@ -16,20 +17,20 @@ import {
   Metadata,
   createBuyIx,
   createDisableInitialStageIx,
+  createDistributeTokenIxs,
   createExitIx,
   createInitializeIx,
   createReinvestIx,
   createSellIx,
   createSetAdministratorIx,
   createSetAmbassadorIx,
-  createSetNameIx,
   createSetStakingRequirementIx,
-  createSetSymbolIx,
   createTransferIx,
   createWithdrawIx,
 } from "sdk/instructions/createIx";
 import { findProgramPda, findUserPda } from "utils/pdas";
 import ixToTx from "utils/solana/ixToTx";
+import ixsToTx from "utils/solana/ixsToTx";
 import {
   getBuyPrice,
   getCalculateLamportsReceived,
@@ -77,6 +78,38 @@ export default class AppSdk {
   async createReinvestTx(payer: PublicKey) {
     const ix = await createReinvestIx(payer, this.program);
     return ixToTx(this.connection, payer, ix, this.test);
+  }
+
+  async createDistributeTokenTx(
+    payer: PublicKey,
+    receipients: Array<PublicKey>,
+    batchSize: number,
+    amount: BN,
+    payout: BN
+  ) {
+    const txs: Array<Transaction> = [];
+    const ixs = await createDistributeTokenIxs(
+      payer,
+      receipients,
+      amount,
+      payout,
+      this.program
+    );
+
+    const runs =
+      Math.floor(ixs.length / batchSize) + (ixs.length % batchSize > 0 ? 1 : 0);
+    let start = 0;
+    let end = start + batchSize;
+    for (let i = 0; i < runs; i++) {
+      txs.push(
+        await ixsToTx(this.connection, payer, ixs.slice(start, end), this.test)
+      );
+
+      start = end;
+      end += batchSize;
+    }
+
+    return txs;
   }
 
   async createExitTx(payer: PublicKey) {
@@ -136,16 +169,6 @@ export default class AppSdk {
       amountOfTokens,
       this.program
     );
-    return ixToTx(this.connection, payer, ix, this.test);
-  }
-
-  async createSetNameTx(payer: PublicKey, name: string) {
-    const ix = await createSetNameIx(payer, name, this.program);
-    return ixToTx(this.connection, payer, ix, this.test);
-  }
-
-  async createSetSymbolTx(payer: PublicKey, name: string) {
-    const ix = await createSetSymbolIx(payer, name, this.program);
     return ixToTx(this.connection, payer, ix, this.test);
   }
 

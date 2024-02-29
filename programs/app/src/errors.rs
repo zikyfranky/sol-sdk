@@ -8,16 +8,14 @@ pub enum ProgramError {
     NoPofit,
     #[msg("You are not an administrator")]
     NotAnAdmin,
-    #[msg("You are not an ambassador")]
-    NotAnAmbassador,
-    #[msg("Exceeded the maximum quota")]
-    LimitExceeded,
+    #[msg("It is in initial phase")]
+    IsInitialPhase,
+    #[msg("It is not in initial phase")]
+    IsPostInitialPhase,
     #[msg("You sent less token than required")]
     SentLessToken,
     #[msg("You do not have enough funds")]
     InsufficientBalance,
-    #[msg("Transfers disabled in ambassador phase")]
-    AmbassadorPhase,
     #[msg("Already Initialized Account")]
     AlreadyInitialized,
     #[msg("To address doesn't match generated to account")]

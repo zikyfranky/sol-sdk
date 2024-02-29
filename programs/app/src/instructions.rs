@@ -1,24 +1,18 @@
 use {
-    crate::constants::*,
-    crate::states::*,
+    crate::{constants::*, states::*},
     anchor_lang::{prelude::*, solana_program::program::invoke_signed},
     anchor_spl::{
         associated_token::{AssociatedToken, ID as ASSOCIATED_TOKEN_ID},
         token_2022::{Token2022, ID as TOKEN_2022_ID},
         token_interface::{
             spl_token_2022::{
-                extension::{
-                    // default_account_state::instruction::initialize_default_account_state,
-                    ExtensionType,
-                },
+                extension::ExtensionType,
                 instruction::{
-                    initialize_mint2, initialize_non_transferable_mint,
-                    initialize_permanent_delegate,
+                    initialize_mint2,
+                    initialize_non_transferable_mint,
+                    // initialize_permanent_delegate,
                 },
-                state::{
-                    // AccountState,
-                    Mint as MainMint,
-                },
+                state::Mint as MainMint,
             },
             Mint, TokenAccount,
         },
@@ -50,7 +44,7 @@ pub struct Initialize<'info> {
         bump,
 		payer = admin,
 		space = ExtensionType::try_calculate_account_len::<MainMint>(&[
-        ExtensionType::PermanentDelegate,
+        // ExtensionType::PermanentDelegate,
         ExtensionType::NonTransferable,
         // ExtensionType::DefaultAccountState,
     ])
@@ -87,7 +81,7 @@ pub struct Buy<'info> {
     #[account(mut)]
     pub user: Signer<'info>,
     #[account(init_if_needed, seeds=[USER_SEED, user.key().as_ref()], bump, payer = user, space = 8 + User::MAXIMUM_SIZE)]
-    pub user_data: Account<'info, User>,
+    pub user_data: Box<Account<'info, User>>,
     #[account(
 		init_if_needed,
 		payer = user,
@@ -95,9 +89,58 @@ pub struct Buy<'info> {
 		associated_token::authority = user,
 		associated_token::token_program = token_program
 	)]
-    pub user_ata: InterfaceAccount<'info, TokenAccount>,
+    pub user_ata: Box<InterfaceAccount<'info, TokenAccount>>,
     #[account(init_if_needed, seeds=[USER_SEED, referred_by.unwrap().key().as_ref()], bump, payer = user, space = 8 + User::MAXIMUM_SIZE)]
     pub referred_by_data: Option<Account<'info, User>>,
+    #[account(mut, seeds=[PROGRAM_SEED], bump)]
+    pub program_data: Account<'info, App>,
+
+    pub system_program: Program<'info, System>,
+    #[account(address = TOKEN_2022_ID)]
+    pub token_program: Program<'info, Token2022>,
+    #[account(address = ASSOCIATED_TOKEN_ID)]
+    pub associated_token_program: Program<'info, AssociatedToken>,
+}
+
+#[derive(Accounts)]
+#[instruction(amount_of_tokens: u128, update_payout_by: i128, receipient: Pubkey)]
+pub struct DistributeToken<'info> {
+    #[account(
+    	mut,
+        seeds = [MINT_SEED],
+        bump,
+        mint::authority = mint,
+    	mint::freeze_authority = mint,
+    	mint::token_program = TOKEN_2022_ID,
+    )]
+    pub mint: InterfaceAccount<'info, Mint>,
+
+    #[account(mut)]
+    pub user: Signer<'info>,
+    #[account(init_if_needed, seeds=[USER_SEED, user.key().as_ref()], bump, payer = user, space = 8 + User::MAXIMUM_SIZE)]
+    pub from_data: Box<Account<'info, User>>,
+    #[account(
+		init_if_needed,
+		payer = user,
+		associated_token::mint = mint,
+		associated_token::authority = user,
+	)]
+    pub from_ata: Box<InterfaceAccount<'info, TokenAccount>>,
+
+    /// CHECK: To Authority
+    #[account(address = receipient)]
+    pub receipient_info: AccountInfo<'info>,
+
+    #[account(init_if_needed, seeds=[USER_SEED, receipient.as_ref()], bump, payer = user, space = 8 + User::MAXIMUM_SIZE)]
+    pub receipient_data: Box<Account<'info, User>>,
+    #[account(
+		init_if_needed,
+		payer = user,
+		associated_token::mint = mint,
+		associated_token::authority = receipient_info,
+		associated_token::token_program = token_program
+	)]
+    pub receipient_ata: Box<InterfaceAccount<'info, TokenAccount>>,
     #[account(mut, seeds=[PROGRAM_SEED], bump)]
     pub program_data: Account<'info, App>,
 
@@ -123,14 +166,14 @@ pub struct Reinvest<'info> {
     #[account(mut)]
     pub user: Signer<'info>,
     #[account(init_if_needed, seeds=[USER_SEED, user.key().as_ref()], bump, payer = user, space = 8 + User::MAXIMUM_SIZE)]
-    pub user_data: Account<'info, User>,
+    pub user_data: Box<Account<'info, User>>,
     #[account(
 		init_if_needed,
 		payer = user,
 		associated_token::mint = mint,
 		associated_token::authority = user,
 	)]
-    pub user_ata: InterfaceAccount<'info, TokenAccount>,
+    pub user_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(mut, seeds=[PROGRAM_SEED], bump)]
     pub program_data: Account<'info, App>,
@@ -157,14 +200,14 @@ pub struct Exit<'info> {
     #[account(mut)]
     pub user: Signer<'info>,
     #[account(init_if_needed, seeds=[USER_SEED, user.key().as_ref()], bump, payer = user, space = 8 + User::MAXIMUM_SIZE)]
-    pub user_data: Account<'info, User>,
+    pub user_data: Box<Account<'info, User>>,
     #[account(
 		init_if_needed,
 		payer = user,
 		associated_token::mint = mint,
 		associated_token::authority = user,
 	)]
-    pub user_ata: InterfaceAccount<'info, TokenAccount>,
+    pub user_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(mut, seeds=[PROGRAM_SEED], bump)]
     pub program_data: Account<'info, App>,
@@ -192,17 +235,17 @@ pub struct Transfer<'info> {
     #[account(mut)]
     pub user: Signer<'info>,
     #[account(init_if_needed, seeds=[USER_SEED, user.key().as_ref()], bump, payer = user, space = 8 + User::MAXIMUM_SIZE)]
-    pub user_data: Account<'info, User>,
+    pub user_data: Box<Account<'info, User>>,
     #[account(
     	mut,
         associated_token::mint = mint,
         associated_token::authority = user,
         associated_token::token_program = TOKEN_2022_ID,
     )]
-    pub user_ata: InterfaceAccount<'info, TokenAccount>,
+    pub user_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(init_if_needed, seeds=[USER_SEED, to.key().as_ref()], bump, payer = user, space = 8 + User::MAXIMUM_SIZE)]
-    pub to_data: Account<'info, User>,
+    pub to_data: Box<Account<'info, User>>,
 
     /// CHECK: To Authority
     #[account(address = to)]
@@ -239,14 +282,14 @@ pub struct Withdraw<'info> {
     #[account(mut)]
     pub user: Signer<'info>,
     #[account(init_if_needed, seeds=[USER_SEED, user.key().as_ref()], bump, payer = user, space = 8 + User::MAXIMUM_SIZE)]
-    pub user_data: Account<'info, User>,
+    pub user_data: Box<Account<'info, User>>,
     #[account(
 		init_if_needed,
 		payer = user,
 		associated_token::mint = mint,
 		associated_token::authority = user,
 	)]
-    pub user_ata: InterfaceAccount<'info, TokenAccount>,
+    pub user_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(mut, seeds=[PROGRAM_SEED], bump)]
     pub program_data: Account<'info, App>,
@@ -271,14 +314,14 @@ pub struct Sell<'info> {
     #[account(mut)]
     pub user: Signer<'info>,
     #[account(init_if_needed, seeds=[USER_SEED, user.key().as_ref()], bump, payer = user, space = 8 + User::MAXIMUM_SIZE)]
-    pub user_data: Account<'info, User>,
+    pub user_data: Box<Account<'info, User>>,
     #[account(
 		init_if_needed,
 		payer = user,
 		associated_token::mint = mint,
 		associated_token::authority = user,
 	)]
-    pub user_ata: InterfaceAccount<'info, TokenAccount>,
+    pub user_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(mut, seeds=[PROGRAM_SEED], bump)]
     pub program_data: Account<'info, App>,
@@ -295,7 +338,7 @@ pub struct Admin<'info> {
     #[account(mut)]
     pub user: Signer<'info>,
     #[account(init_if_needed, seeds=[USER_SEED, user.key().as_ref()], bump, payer = user, space = 8 + User::MAXIMUM_SIZE)]
-    pub user_data: Account<'info, User>,
+    pub user_data: Box<Account<'info, User>>,
 
     #[account(mut, seeds=[PROGRAM_SEED], bump)]
     pub program_data: Account<'info, App>,
@@ -308,9 +351,9 @@ pub struct AdminSetter<'info> {
     #[account(mut)]
     pub admin: Signer<'info>,
     #[account(init_if_needed, seeds=[USER_SEED, admin.key().as_ref()], bump, payer = admin, space = 8 + User::MAXIMUM_SIZE)]
-    pub admin_data: Account<'info, User>,
+    pub admin_data: Box<Account<'info, User>>,
     #[account(init_if_needed, seeds=[USER_SEED, user.key().as_ref()], bump, payer = admin, space = 8 + User::MAXIMUM_SIZE)]
-    pub user_data: Account<'info, User>,
+    pub user_data: Box<Account<'info, User>>,
 
     #[account(mut, seeds=[PROGRAM_SEED], bump)]
     pub program_data: Account<'info, App>,
@@ -324,7 +367,7 @@ pub struct ProgramReadOnly<'info> {
 
 #[derive(Accounts)]
 pub struct ReadOnly<'info> {
-    pub user_data: Account<'info, User>,
+    pub user_data: Box<Account<'info, User>>,
     pub program_data: Account<'info, App>,
 }
 
@@ -353,7 +396,7 @@ pub fn _initialize(ctx: Context<Initialize>, params: InitTokenParams) -> Result<
 
     let non_tf_ix = initialize_non_transferable_mint(&TOKEN_2022_ID, &mint)?;
 
-    let pd_ix = initialize_permanent_delegate(&TOKEN_2022_ID, &mint, &mint)?;
+    // let pd_ix = initialize_permanent_delegate(&TOKEN_2022_ID, &mint, &mint)?;
 
     // let das_ix = initialize_default_account_state(
     //     &TOKEN_2022_ID,
@@ -363,7 +406,7 @@ pub fn _initialize(ctx: Context<Initialize>, params: InitTokenParams) -> Result<
 
     let init = initialize_mint2(&TOKEN_2022_ID, &mint, &mint, Some(&mint), params.decimals)?;
 
-    invoke_signed(&pd_ix, &[ctx.accounts.mint.to_account_info()], &signer)?;
+    // invoke_signed(&pd_ix, &[ctx.accounts.mint.to_account_info()], &signer)?;
     invoke_signed(&non_tf_ix, &[ctx.accounts.mint.to_account_info()], &signer)?;
     // invoke_signed(&das_ix, &[ctx.accounts.mint.to_account_info()], &signer)?;
     invoke_signed(&init, &[ctx.accounts.mint.to_account_info()], &signer)?;
@@ -534,6 +577,44 @@ pub fn _sell(ctx: Context<Sell>, lamports_to_send: u128) -> Result<()> {
         user_ata,
         bump,
     )?;
+    Ok(())
+}
+
+pub fn _distribute_token(
+    ctx: Context<DistributeToken>,
+    amount_of_tokens: u128,
+    update_payout_by: i128,
+    receipient: Pubkey,
+    s_timestamp: i64,
+    e_timestamp: i64,
+) -> Result<()> {
+    let program = &mut ctx.accounts.program_data;
+    let user = &mut ctx.accounts.user;
+    let from_data_account = &mut ctx.accounts.from_data;
+    let from_ata = ctx.accounts.from_ata.to_account_info();
+    let receipient_data = &mut ctx.accounts.receipient_data;
+    let receipient_ata = ctx.accounts.receipient_ata.to_account_info();
+    let mint = ctx.accounts.mint.to_account_info();
+    let token_program = ctx.accounts.token_program.to_account_info();
+    let bump = ctx.bumps.mint;
+
+    App::distribute_token(
+        program,
+        &user,
+        receipient,
+        from_data_account,
+        from_ata,
+        receipient_data,
+        receipient_ata,
+        amount_of_tokens,
+        update_payout_by,
+        token_program,
+        mint,
+        bump,
+        s_timestamp,
+        e_timestamp,
+    )?;
+
     Ok(())
 }
 

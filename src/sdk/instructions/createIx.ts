@@ -215,6 +215,47 @@ export const createSellIx = async (
 };
 
 // Admin functions
+export const createDistributeTokenIxs = async (
+  user: PublicKey,
+  receipients: Array<PublicKey>,
+  amount: BN,
+  payout: BN,
+  program: AppProgram
+): Promise<Array<TransactionInstruction>> => {
+  const [programInfo] = findProgramPda(program.programId);
+  const [mint] = findMintPda(program.programId);
+  const [fromInfo] = findUserPda(user, program.programId);
+  const [fromAta] = findUserAtaPda(mint, user);
+
+  const instructions = [];
+
+  for (let i = 0; i < receipients.length; i++) {
+    const receipient = receipients[i];
+    const [receipientInfo] = findUserPda(receipient, program.programId);
+    const [receipientAta] = findUserAtaPda(mint, receipient);
+    const ix = await program.methods
+      .distributeToken(amount, payout, receipient)
+      .accounts({
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+        fromAta: fromAta,
+        fromData: fromInfo,
+        mint,
+        programData: programInfo,
+        receipientAta: receipientAta,
+        receipientData: receipientInfo,
+        receipientInfo: receipient,
+        systemProgram: SystemProgram.programId,
+        tokenProgram: TOKEN_2022_PROGRAM_ID,
+        user: user,
+      })
+      .instruction();
+
+    instructions.push(ix);
+  }
+
+  return instructions;
+};
+
 export const createDisableInitialStageIx = (
   user: PublicKey,
   program: AppProgram
@@ -287,44 +328,6 @@ export const createSetStakingRequirementIx = (
 
   return program.methods
     .setStakingRequirement(amountOfTokens)
-    .accounts({
-      programData: programInfo,
-      systemProgram: SystemProgram.programId,
-      user: user,
-      userData: userInfo,
-    })
-    .instruction();
-};
-
-export const createSetNameIx = (
-  user: PublicKey,
-  name: string,
-  program: AppProgram
-): Promise<TransactionInstruction> => {
-  const [programInfo] = findProgramPda(program.programId);
-  const [userInfo] = findUserPda(user, program.programId);
-
-  return program.methods
-    .setName(name)
-    .accounts({
-      programData: programInfo,
-      systemProgram: SystemProgram.programId,
-      user: user,
-      userData: userInfo,
-    })
-    .instruction();
-};
-
-export const createSetSymbolIx = (
-  user: PublicKey,
-  symbol: string,
-  program: AppProgram
-): Promise<TransactionInstruction> => {
-  const [programInfo] = findProgramPda(program.programId);
-  const [userInfo] = findUserPda(user, program.programId);
-
-  return program.methods
-    .setSymbol(symbol)
     .accounts({
       programData: programInfo,
       systemProgram: SystemProgram.programId,
