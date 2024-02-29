@@ -25,12 +25,28 @@ export type App = {
             type: "bool";
           },
           {
-            name: "ambassadorQuota";
-            type: "u128";
+            name: "referredBy";
+            type: "publicKey";
           },
           {
             name: "payout";
             type: "i128";
+          },
+          {
+            name: "usableLocked";
+            type: "u128";
+          },
+          {
+            name: "totalLocked";
+            type: "u128";
+          },
+          {
+            name: "lockedStarttime";
+            type: "i64";
+          },
+          {
+            name: "lockedEndtime";
+            type: "i64";
           }
         ];
         kind: "struct";
@@ -81,23 +97,15 @@ export type App = {
             type: "u128";
           },
           {
-            name: "ambassadorMaxPurchase";
-            type: "u128";
-          },
-          {
-            name: "ambassadorQuota";
-            type: "u128";
-          },
-          {
             name: "profitPerShare";
             type: "u128";
           },
           {
-            name: "onlyAmbassadors";
+            name: "isInitialized";
             type: "bool";
           },
           {
-            name: "isInitialized";
+            name: "isInitialPhase";
             type: "bool";
           }
         ];
@@ -123,13 +131,13 @@ export type App = {
     },
     {
       code: 6003;
-      msg: "You are not an ambassador";
-      name: "NotAnAmbassador";
+      msg: "It is in initial phase";
+      name: "IsInitialPhase";
     },
     {
       code: 6004;
-      msg: "Exceeded the maximum quota";
-      name: "LimitExceeded";
+      msg: "It is not in initial phase";
+      name: "IsPostInitialPhase";
     },
     {
       code: 6005;
@@ -143,21 +151,16 @@ export type App = {
     },
     {
       code: 6007;
-      msg: "Transfers disabled in ambassador phase";
-      name: "AmbassadorPhase";
-    },
-    {
-      code: 6008;
       msg: "Already Initialized Account";
       name: "AlreadyInitialized";
     },
     {
-      code: 6009;
+      code: 6008;
       msg: "To address doesn't match generated to account";
       name: "InvalidToAccount";
     },
     {
-      code: 6010;
+      code: 6009;
       msg: "Signer isn't Owner";
       name: "NotOwner";
     }
@@ -579,6 +582,80 @@ export type App = {
       accounts: [
         {
           isMut: true;
+          isSigner: false;
+          name: "mint";
+        },
+        {
+          isMut: true;
+          isSigner: true;
+          name: "user";
+        },
+        {
+          isMut: true;
+          isSigner: false;
+          name: "fromData";
+        },
+        {
+          isMut: true;
+          isSigner: false;
+          name: "fromAta";
+        },
+        {
+          isMut: false;
+          isSigner: false;
+          name: "receipientInfo";
+        },
+        {
+          isMut: true;
+          isSigner: false;
+          name: "receipientData";
+        },
+        {
+          isMut: true;
+          isSigner: false;
+          name: "receipientAta";
+        },
+        {
+          isMut: true;
+          isSigner: false;
+          name: "programData";
+        },
+        {
+          isMut: false;
+          isSigner: false;
+          name: "systemProgram";
+        },
+        {
+          isMut: false;
+          isSigner: false;
+          name: "tokenProgram";
+        },
+        {
+          isMut: false;
+          isSigner: false;
+          name: "associatedTokenProgram";
+        }
+      ];
+      args: [
+        {
+          name: "amountOfTokens";
+          type: "u128";
+        },
+        {
+          name: "updatePayoutBy";
+          type: "i128";
+        },
+        {
+          name: "receipient";
+          type: "publicKey";
+        }
+      ];
+      name: "distributeToken";
+    },
+    {
+      accounts: [
+        {
+          isMut: true;
           isSigner: true;
           name: "admin";
         },
@@ -685,68 +762,6 @@ export type App = {
         }
       ];
       name: "setStakingRequirement";
-    },
-    {
-      accounts: [
-        {
-          isMut: true;
-          isSigner: true;
-          name: "user";
-        },
-        {
-          isMut: true;
-          isSigner: false;
-          name: "userData";
-        },
-        {
-          isMut: true;
-          isSigner: false;
-          name: "programData";
-        },
-        {
-          isMut: false;
-          isSigner: false;
-          name: "systemProgram";
-        }
-      ];
-      args: [
-        {
-          name: "name";
-          type: "string";
-        }
-      ];
-      name: "setName";
-    },
-    {
-      accounts: [
-        {
-          isMut: true;
-          isSigner: true;
-          name: "user";
-        },
-        {
-          isMut: true;
-          isSigner: false;
-          name: "userData";
-        },
-        {
-          isMut: true;
-          isSigner: false;
-          name: "programData";
-        },
-        {
-          isMut: false;
-          isSigner: false;
-          name: "systemProgram";
-        }
-      ];
-      args: [
-        {
-          name: "symbol";
-          type: "string";
-        }
-      ];
-      name: "setSymbol";
     },
     {
       accounts: [
@@ -886,12 +901,28 @@ export const IDL: App = {
             type: "bool",
           },
           {
-            name: "ambassadorQuota",
-            type: "u128",
+            name: "referredBy",
+            type: "publicKey",
           },
           {
             name: "payout",
             type: "i128",
+          },
+          {
+            name: "usableLocked",
+            type: "u128",
+          },
+          {
+            name: "totalLocked",
+            type: "u128",
+          },
+          {
+            name: "lockedStarttime",
+            type: "i64",
+          },
+          {
+            name: "lockedEndtime",
+            type: "i64",
           },
         ],
         kind: "struct",
@@ -942,23 +973,15 @@ export const IDL: App = {
             type: "u128",
           },
           {
-            name: "ambassadorMaxPurchase",
-            type: "u128",
-          },
-          {
-            name: "ambassadorQuota",
-            type: "u128",
-          },
-          {
             name: "profitPerShare",
             type: "u128",
           },
           {
-            name: "onlyAmbassadors",
+            name: "isInitialized",
             type: "bool",
           },
           {
-            name: "isInitialized",
+            name: "isInitialPhase",
             type: "bool",
           },
         ],
@@ -984,13 +1007,13 @@ export const IDL: App = {
     },
     {
       code: 6003,
-      msg: "You are not an ambassador",
-      name: "NotAnAmbassador",
+      msg: "It is in initial phase",
+      name: "IsInitialPhase",
     },
     {
       code: 6004,
-      msg: "Exceeded the maximum quota",
-      name: "LimitExceeded",
+      msg: "It is not in initial phase",
+      name: "IsPostInitialPhase",
     },
     {
       code: 6005,
@@ -1004,21 +1027,16 @@ export const IDL: App = {
     },
     {
       code: 6007,
-      msg: "Transfers disabled in ambassador phase",
-      name: "AmbassadorPhase",
-    },
-    {
-      code: 6008,
       msg: "Already Initialized Account",
       name: "AlreadyInitialized",
     },
     {
-      code: 6009,
+      code: 6008,
       msg: "To address doesn't match generated to account",
       name: "InvalidToAccount",
     },
     {
-      code: 6010,
+      code: 6009,
       msg: "Signer isn't Owner",
       name: "NotOwner",
     },
@@ -1440,6 +1458,80 @@ export const IDL: App = {
       accounts: [
         {
           isMut: true,
+          isSigner: false,
+          name: "mint",
+        },
+        {
+          isMut: true,
+          isSigner: true,
+          name: "user",
+        },
+        {
+          isMut: true,
+          isSigner: false,
+          name: "fromData",
+        },
+        {
+          isMut: true,
+          isSigner: false,
+          name: "fromAta",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "receipientInfo",
+        },
+        {
+          isMut: true,
+          isSigner: false,
+          name: "receipientData",
+        },
+        {
+          isMut: true,
+          isSigner: false,
+          name: "receipientAta",
+        },
+        {
+          isMut: true,
+          isSigner: false,
+          name: "programData",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "systemProgram",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "tokenProgram",
+        },
+        {
+          isMut: false,
+          isSigner: false,
+          name: "associatedTokenProgram",
+        },
+      ],
+      args: [
+        {
+          name: "amountOfTokens",
+          type: "u128",
+        },
+        {
+          name: "updatePayoutBy",
+          type: "i128",
+        },
+        {
+          name: "receipient",
+          type: "publicKey",
+        },
+      ],
+      name: "distributeToken",
+    },
+    {
+      accounts: [
+        {
+          isMut: true,
           isSigner: true,
           name: "admin",
         },
@@ -1546,68 +1638,6 @@ export const IDL: App = {
         },
       ],
       name: "setStakingRequirement",
-    },
-    {
-      accounts: [
-        {
-          isMut: true,
-          isSigner: true,
-          name: "user",
-        },
-        {
-          isMut: true,
-          isSigner: false,
-          name: "userData",
-        },
-        {
-          isMut: true,
-          isSigner: false,
-          name: "programData",
-        },
-        {
-          isMut: false,
-          isSigner: false,
-          name: "systemProgram",
-        },
-      ],
-      args: [
-        {
-          name: "name",
-          type: "string",
-        },
-      ],
-      name: "setName",
-    },
-    {
-      accounts: [
-        {
-          isMut: true,
-          isSigner: true,
-          name: "user",
-        },
-        {
-          isMut: true,
-          isSigner: false,
-          name: "userData",
-        },
-        {
-          isMut: true,
-          isSigner: false,
-          name: "programData",
-        },
-        {
-          isMut: false,
-          isSigner: false,
-          name: "systemProgram",
-        },
-      ],
-      args: [
-        {
-          name: "symbol",
-          type: "string",
-        },
-      ],
-      name: "setSymbol",
     },
     {
       accounts: [

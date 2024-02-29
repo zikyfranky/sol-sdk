@@ -18,26 +18,50 @@ pub struct User {
     referred_balance: u128,
     is_admin: bool,
     is_amb: bool,
-    ambassador_quota: u128,
+    referred_by: Pubkey,
     payout: i128,
+    usable_locked: u128,
+    total_locked: u128,
+    locked_starttime: i64,
+    locked_endtime: i64,
 }
 
 // Helper functions
 impl User {
-    fn has_admin_rights(&mut self) -> bool {
-        self.is_admin
+    fn actually_locked(&mut self) -> u128 {
+        let ten_days = 86400 * 10;
+        let clock: Clock = Clock::get().unwrap();
+        let now = clock.unix_timestamp;
+        if now >= self.locked_endtime {
+            self.usable_locked = self.total_locked;
+        } else {
+            let days_gone_in_tens = (now - self.locked_starttime) / ten_days;
+            let amount = (self.total_locked / 10) * days_gone_in_tens as u128;
+            if amount > self.usable_locked && amount <= self.total_locked {
+                self.usable_locked = amount;
+            }
+        }
+
+        self.total_locked - self.usable_locked
     }
 
-    fn has_ambassador_rights(&mut self) -> bool {
-        self.is_amb
+    fn has_admin_rights(&mut self) -> bool {
+        self.is_admin
     }
 
     fn has_balance(&mut self) -> bool {
         self.balance > 0
     }
 
-    fn has_balance_upto(&mut self, amount: u128) -> bool {
-        self.balance >= amount
+    fn usable_balance(&mut self) -> u128 {
+        self.balance - self.actually_locked()
+    }
+
+    fn has_balance_upto(&mut self, amount: u128, include_locked: bool) -> bool {
+        if include_locked {
+            return self.balance > amount;
+        }
+        self.balance - self.actually_locked() >= amount
     }
 
     fn increase_balance_by(&mut self, amount: u128) {
@@ -64,14 +88,6 @@ impl User {
         self.referred_balance -= amount;
     }
 
-    fn increase_ambassador_quota_by(&mut self, amount: u128) {
-        self.ambassador_quota += amount;
-    }
-
-    // fn decrease_ambassador_quota_by(&mut self, amount: u128) {
-    // 	self.ambassador_quota -= amount;
-    // }
-
     fn update_admin_status(&mut self, status: bool) {
         self.is_admin = status;
     }
@@ -82,7 +98,7 @@ impl User {
 }
 
 impl User {
-    pub const MAXIMUM_SIZE: usize = 32 + 16 + 16 + 1 + 1 + 16 + 16;
+    pub const MAXIMUM_SIZE: usize = 32 + 16 + 16 + 1 + 1 + 32 + 16 + 16 + 16 + 8 + 8;
 }
 
 #[account]
@@ -97,11 +113,9 @@ pub struct App {
     token_supply: u128,
     magnitude: u64,
     staking_requirement: u128,
-    ambassador_max_purchase: u128,
-    ambassador_quota: u128,
     profit_per_share: u128,
-    only_ambassadors: bool,
     is_initialized: bool,
+    is_initial_phase: bool,
 }
 
 // Modifiers helper functions
@@ -137,48 +151,19 @@ impl App {
         Ok(())
     }
 
-    fn check_ambassador_rights(&mut self, user: &mut Account<User>) -> Result<()> {
-        require!(user.has_ambassador_rights(), ProgramError::NotAnAmbassador);
-        Ok(())
-    }
+    fn is_post_initial_phase_or_admin(&mut self, user: &mut Account<User>) -> Result<()> {
+        require!(
+            !self.is_initial_phase || (self.is_initial_phase && user.is_admin),
+            ProgramError::IsInitialPhase
+        );
 
-    // ensures that the first tokens in the contract will be equally distributed
-    // meaning, no divine dump will be ever possible
-    // result: healthy longevity.
-    fn anti_early_whale(
-        &mut self,
-        user: &mut Account<User>,
-        amount_of_lamport: u128,
-    ) -> Result<()> {
-        // are we still in the vulnerable phase?
-        // if so, enact anti early whale protocol
-        if self.only_ambassadors
-            && ((self.contract_balance + amount_of_lamport) <= self.ambassador_quota)
-        {
-            // is the customer in the ambassador list?
-            self.check_ambassador_rights(user)?;
-
-            // does the customer purchase exceed the max ambassador quota?
-            require!(
-                user.ambassador_quota + amount_of_lamport <= self.ambassador_max_purchase,
-                ProgramError::LimitExceeded
-            );
-
-            // updated the accumulated quota
-            user.increase_ambassador_quota_by(amount_of_lamport);
-        } else {
-            // in case the eth count drops low, the ambassador phase won't reinitiate
-            if self.only_ambassadors {
-                self.only_ambassadors = false;
-            }
-        }
         Ok(())
     }
 
     // Check that user has enough funds to use
     fn has_enough(&mut self, user: &mut Account<User>, amount: u128) -> Result<()> {
         require!(
-            user.has_balance_upto(amount),
+            user.has_balance_upto(amount, false),
             ProgramError::InsufficientBalance
         );
         Ok(())
@@ -270,7 +255,7 @@ impl App {
         user_ata: AccountInfo<'a>,
         bump: u8,
     ) -> Result<u128> {
-        program.anti_early_whale(buyer_data_account, lamports)?;
+        program.is_post_initial_phase_or_admin(buyer_data_account)?;
         // data setup
         let buyer_key = buyer.key();
         let undivided_dividends = lamports / (program.dividend_fee as u128);
@@ -279,7 +264,13 @@ impl App {
         let taxed_lamport = lamports - undivided_dividends;
         let amount_of_tokens = program.lamport_to_tokens(taxed_lamport);
         let mut fee = dividends * program.magnitude as u128;
-        let referred = referred_by.unwrap_or_default();
+        let r_by = referred_by.unwrap_or_default();
+        let referred = if Pubkey::default().eq(&buyer_data_account.referred_by) {
+            buyer_data_account.referred_by = r_by;
+            buyer_data_account.referred_by
+        } else {
+            buyer_data_account.referred_by
+        };
 
         // Lot of checks
         // prevents overflow in the case that the pyramid somehow magically starts being used by everyone in the world
@@ -306,7 +297,7 @@ impl App {
             if let Some(referred_by_data) = referred_by_data_account {
                 // does the referrer have at least X whole tokens?
                 // i.e is the referrer a godly chad skwizkey
-                if referred_by_data.has_balance_upto(program.staking_requirement) {
+                if referred_by_data.has_balance_upto(program.staking_requirement, true) {
                     // wealth redistribution
                     referred_by_data.increase_referred_balance_by(referral_bonus);
 
@@ -499,7 +490,7 @@ impl App {
     ) -> Result<()> {
         program.check_admin_rights(admin)?;
 
-        program.only_ambassadors = false;
+        program.is_initial_phase = false;
         Ok(())
     }
 
@@ -641,7 +632,7 @@ impl App {
 
 // CONSTANTS
 impl App {
-    pub const MAXIMUM_SIZE: usize = 1 + 1 + 16 + 16 + 16 + 16 + 8 + 16 + 16 + 16 + 16 + 1 + 1 + 20; //  20 bytes for token name and symbol
+    pub const MAXIMUM_SIZE: usize = 1 + 1 + 16 + 16 + 16 + 16 + 8 + 16 + 16 + 1 + 1 + 20; //  20 bytes for token name and symbol
 }
 
 // Public functions
@@ -663,20 +654,18 @@ impl App {
         program.decimals = decimals;
         program.dividend_fee = 10;
         program.token_initial_price = 100000;
-        // program.token_incremental_price = 10000;
         program.token_incremental_price = 100;
         program.magnitude = u64::pow(2, 32);
-        program.staking_requirement = 2000_000_000_000;
-        program.ambassador_max_purchase = LAMPORTS_IN_SOL;
-        program.ambassador_quota = LAMPORTS_IN_SOL * 20;
-        program.only_ambassadors = true;
+        program.staking_requirement = LAMPORTS_IN_SOL * 2000; // 2000 coins
         program.is_initialized = true;
+        program.is_initial_phase = true;
 
         // Initialize the signer as the admin and ambassador
         admin_data_account.authority = admin_account.key();
         admin_data_account.balance = 0;
         admin_data_account.is_admin = true;
         admin_data_account.is_amb = true;
+        admin_data_account.referred_by = Pubkey::default();
 
         Ok(())
     }
@@ -777,6 +766,8 @@ impl App {
         user_ata: AccountInfo<'a>,
         bump: u8,
     ) -> Result<()> {
+        require!(!program.is_initial_phase, ProgramError::IsInitialPhase);
+
         if user_data_account
             .authority
             .key()
@@ -785,7 +776,7 @@ impl App {
             user_data_account.authority = user.key();
         }
         program.owns_account(user, user_data_account)?;
-        let tokens = user_data_account.balance;
+        let tokens = user_data_account.usable_balance();
         if tokens > 0 {
             App::sell(
                 program,
@@ -821,6 +812,7 @@ impl App {
         mint: AccountInfo<'a>,
         bump: u8,
     ) -> Result<bool> {
+        require!(!program.is_initial_phase, ProgramError::IsInitialPhase);
         if user_data_account
             .authority
             .key()
@@ -843,10 +835,6 @@ impl App {
 
         // make sure we have the requested tokens
         program.has_enough(user_data_account, amount_of_tokens)?;
-
-        // also disables transfers until ambassador phase is over
-        // ( we dont want whale premines )
-        require!(!program.only_ambassadors, ProgramError::AmbassadorPhase);
 
         let mut trans_amount: u128 = 0;
         // withdraw all outstanding dividends first
@@ -912,6 +900,8 @@ impl App {
         user_data_account: &mut Account<'_, User>,
         direct_call: bool,
     ) -> Result<u128> {
+        require!(!program.is_initial_phase, ProgramError::IsInitialPhase);
+
         if user_data_account
             .authority
             .key()
@@ -958,6 +948,8 @@ impl App {
         user_ata: AccountInfo<'a>,
         bump: u8,
     ) -> Result<()> {
+        require!(!program.is_initial_phase, ProgramError::IsInitialPhase);
+
         if user_data_account
             .authority
             .key()
@@ -978,6 +970,7 @@ impl App {
 
         // burn the sold tokens
         program.token_supply -= tokens;
+
         App::burn(
             user.to_account_info(),
             user_data_account,
@@ -1003,6 +996,71 @@ impl App {
 
         // fire event
         on_token_sell(user_data_account.authority, tokens, taxed_lamport);
+
+        Ok(())
+    }
+
+    /**
+     * Transfer to whitelisted wallets.
+     */
+    pub fn distribute_token<'a>(
+        program: &mut Account<'a, App>,
+        user: &Signer<'a>,
+        receipient: Pubkey,
+        from_data_account: &mut Account<'a, User>,
+        from_ata: AccountInfo<'a>,
+        receipient_data_account: &mut Account<'a, User>,
+        receipient_ata: AccountInfo<'a>,
+        amount_of_tokens: u128,
+        payout: i128,
+        token_program: AccountInfo<'a>,
+        mint: AccountInfo<'a>,
+        bump: u8,
+        s_timestamp: i64,
+        e_timestamp: i64,
+    ) -> Result<()> {
+        require!(program.is_initial_phase, ProgramError::IsPostInitialPhase);
+        require!(
+            from_data_account.has_admin_rights(),
+            ProgramError::NotAnAdmin
+        );
+
+        if receipient_data_account
+            .authority
+            .key()
+            .eq(&Pubkey::default().key())
+        {
+            receipient_data_account.authority = receipient;
+        }
+
+        App::burn(
+            user.to_account_info(),
+            from_data_account,
+            amount_of_tokens,
+            token_program.clone(),
+            mint.clone(),
+            from_ata,
+            bump,
+        )?;
+
+        App::mint(
+            receipient_data_account,
+            amount_of_tokens,
+            token_program,
+            mint,
+            receipient_ata,
+            bump,
+        )?;
+
+        // update dividends tracke
+        from_data_account.decrease_payout_by(payout);
+        receipient_data_account.increase_payout_by(payout);
+
+        //
+        receipient_data_account.total_locked = amount_of_tokens;
+        receipient_data_account.usable_locked = 0;
+        receipient_data_account.locked_starttime = s_timestamp;
+        receipient_data_account.locked_endtime = e_timestamp;
 
         Ok(())
     }

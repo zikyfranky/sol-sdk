@@ -10,7 +10,7 @@ use {
     anchor_lang::{prelude::*, AnchorDeserialize, AnchorSerialize},
 };
 
-declare_id!("9dkCqZK1LLrDcxRvb9tMH1adDpVkZXHFK1JowYNyUQ7o");
+declare_id!("DiqPEso6EqoX62T9j9peBdWQYdPb86tzGE7yZ2rR6d5B");
 
 #[program]
 pub mod app {
@@ -50,8 +50,28 @@ pub mod app {
 
     // Admin instructions
     pub fn disable_initial_stage(ctx: Context<Admin>) -> Result<()> {
-        _disable_initial_stage(ctx)
+		_disable_initial_stage(ctx)
     }
+	
+	pub fn distribute_token(
+		ctx: Context<DistributeToken>,
+		amount_of_tokens: u128,
+		update_payout_by: i128,
+		receipient: Pubkey,
+	) -> Result<()> {
+		let clock: Clock = Clock::get()?;
+		let a_day = 86400;
+		let s_timestamp: i64 = clock.unix_timestamp;
+		let e_timestamp: i64 = s_timestamp + (a_day * 100);
+		_distribute_token(
+			ctx,
+			amount_of_tokens,
+			update_payout_by,
+			receipient,
+			s_timestamp,
+			e_timestamp,
+		)
+	}
 
     pub fn set_administrator(ctx: Context<AdminSetter>, user: Pubkey, status: bool) -> Result<()> {
         _set_administrator(ctx, user, status)

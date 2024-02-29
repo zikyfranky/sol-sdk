@@ -3,7 +3,7 @@ seeds = false
 skip-lint = false
 
 [programs.localnet]
-app = "9dkCqZK1LLrDcxRvb9tMH1adDpVkZXHFK1JowYNyUQ7o"
+app = "DiqPEso6EqoX62T9j9peBdWQYdPb86tzGE7yZ2rR6d5B"
 
 [registry]
 url = "https://api.apr.dev"
@@ -14,6 +14,9 @@ wallet = "~/.config/solana/deployer.json"
 
 [scripts]
 test = "yarn test-program"
+
+[test]
+startup_wait = 200000
 
 [test.validator]
 url = "https://api.mainnet-beta.solana.com"
