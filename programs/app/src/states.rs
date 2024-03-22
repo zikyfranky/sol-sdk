@@ -265,22 +265,28 @@ impl App {
         let amount_of_tokens = program.lamport_to_tokens(taxed_lamport);
         let mut fee = dividends * program.magnitude as u128;
         let r_by = referred_by.unwrap_or_default();
-        let referred = if Pubkey::default().eq(&buyer_data_account.referred_by) {
+
+        require_keys_neq!(r_by, buyer_key, ProgramError::SelfReferral);
+
+        if Pubkey::default().eq(&buyer_data_account.referred_by)
+            && !Pubkey::default().eq(&r_by)
+            && !r_by.eq(&buyer_key)
+        {
             buyer_data_account.referred_by = r_by;
-            buyer_data_account.referred_by
-        } else {
-            buyer_data_account.referred_by
-        };
+        }
+        let referred = buyer_data_account.referred_by;
 
         // Lot of checks
         // prevents overflow in the case that the pyramid somehow magically starts being used by everyone in the world
         // (or hackers)
         require_gt!(amount_of_tokens, 0, ProgramError::SentLessToken);
-        require_gte!(
-            buyer.get_lamports(),
-            lamports as u64,
-            ProgramError::InsufficientBalance
-        );
+        if direct_buy {
+            require_gte!(
+                buyer.get_lamports(),
+                lamports as u64,
+                ProgramError::InsufficientBalance
+            );
+        }
         require_gt!(
             amount_of_tokens + program.token_supply,
             program.token_supply,
@@ -330,7 +336,7 @@ impl App {
             // take the amount of dividends gained through this transaction, and allocates them evenly to each shareholder
             program.profit_per_share +=
                 (dividends * program.magnitude as u128) / (program.token_supply);
-
+            msg!(" PPS {}", program.profit_per_share);
             // calculate the amount of tokens the customer receives over his purchase
             fee = fee
                 - (fee
@@ -340,7 +346,6 @@ impl App {
             // add tokens to the pool
             program.token_supply = amount_of_tokens;
         }
-
         // update circulating supply & the ledger address for the customer
         App::mint(
             buyer_data_account,
@@ -353,10 +358,19 @@ impl App {
 
         // Tells the contract that the buyer doesn't deserve dividends for the tokens before they owned them;
         //really i know you think you do but you don't
+        msg!("User Payout {}", buyer_data_account.payout);
         let updated_payouts: i128 =
             ((program.profit_per_share * amount_of_tokens) as i128 - fee as i128) as i128;
+        msg!(
+            "Payout to Add {}\nPPS {}\nFee {}\nToken {}",
+            updated_payouts,
+            program.profit_per_share,
+            fee,
+            amount_of_tokens
+        );
 
         buyer_data_account.increase_payout_by(updated_payouts);
+        msg!("User Payout {} After", buyer_data_account.payout);
 
         // fire event
         on_token_purchase(buyer_key, lamports, amount_of_tokens, referred);
@@ -685,6 +699,7 @@ impl App {
         mint: AccountInfo<'a>,
         user_ata: AccountInfo<'a>,
         bump: u8,
+        token_balance: u64,
     ) -> Result<u128> {
         if buyer_data_account
             .authority
@@ -695,6 +710,7 @@ impl App {
         }
 
         program.owns_account(buyer, buyer_data_account)?;
+        buyer_data_account.balance = token_balance as u128;
         App::purchase_tokens(
             program,
             buyer,
@@ -734,6 +750,9 @@ impl App {
         program.owns_account(user, user_data_account)?;
         let dividends = App::my_dividends(program, user_data_account, false);
         let mut none: Option<Account<User>> = None;
+
+        let updated_payouts = (dividends * program.magnitude as u128) as i128;
+        user_data_account.increase_payout_by(updated_payouts);
 
         let tokens = App::purchase_tokens(
             program,
@@ -813,6 +832,8 @@ impl App {
         bump: u8,
     ) -> Result<bool> {
         require!(!program.is_initial_phase, ProgramError::IsInitialPhase);
+        require_keys_neq!(to, user.key(), ProgramError::SelfTransfer);
+
         if user_data_account
             .authority
             .key()

@@ -454,6 +454,7 @@ pub fn _initialize(ctx: Context<Initialize>, params: InitTokenParams) -> Result<
 pub fn _buy(ctx: Context<Buy>, lamports_to_send: u128, referred_by: Option<Pubkey>) -> Result<()> {
     let program = &mut ctx.accounts.program_data;
     let buyer = &mut ctx.accounts.user;
+    let token_balance = ctx.accounts.user_ata.amount;
     let buyer_data_account = &mut ctx.accounts.user_data;
     let referred_by_data_account = &mut ctx.accounts.referred_by_data;
     let system_program = ctx.accounts.system_program.to_account_info();
@@ -474,6 +475,7 @@ pub fn _buy(ctx: Context<Buy>, lamports_to_send: u128, referred_by: Option<Pubke
         mint,
         user_ata,
         bump,
+        token_balance,
     )?;
     Ok(())
 }

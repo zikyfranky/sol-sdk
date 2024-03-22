@@ -71,6 +71,7 @@ export default class AppSdk {
   }
 
   async createBuyTx(payer: PublicKey, amount: BN, referral?: PublicKey) {
+    if (referral && referral.equals(payer)) referral = undefined;
     const ix = await createBuyIx(payer, amount, this.program, referral);
     return ixToTx(this.connection, payer, ix, this.test);
   }

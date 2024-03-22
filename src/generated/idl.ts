@@ -166,6 +166,16 @@ const APP_IDL: Idl = {
       msg: "Signer isn't Owner",
       name: "NotOwner",
     },
+    {
+      code: 6010,
+      msg: "You can't refer yourself",
+      name: "SelfReferral",
+    },
+    {
+      code: 6011,
+      msg: "You can't transfer to yourself",
+      name: "SelfTransfer",
+    },
   ],
   instructions: [
     {
@@ -846,6 +856,9 @@ const APP_IDL: Idl = {
       returns: "u128",
     },
   ],
+  metadata: {
+    address: "DiqPEso6EqoX62T9j9peBdWQYdPb86tzGE7yZ2rR6d5B",
+  },
   name: "app",
   types: [
     {

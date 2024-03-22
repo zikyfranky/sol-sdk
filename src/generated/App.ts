@@ -163,6 +163,16 @@ export type App = {
       code: 6009;
       msg: "Signer isn't Owner";
       name: "NotOwner";
+    },
+    {
+      code: 6010;
+      msg: "You can't refer yourself";
+      name: "SelfReferral";
+    },
+    {
+      code: 6011;
+      msg: "You can't transfer to yourself";
+      name: "SelfTransfer";
     }
   ];
   instructions: [
@@ -1039,6 +1049,16 @@ export const IDL: App = {
       code: 6009,
       msg: "Signer isn't Owner",
       name: "NotOwner",
+    },
+    {
+      code: 6010,
+      msg: "You can't refer yourself",
+      name: "SelfReferral",
+    },
+    {
+      code: 6011,
+      msg: "You can't transfer to yourself",
+      name: "SelfTransfer",
     },
   ],
   instructions: [

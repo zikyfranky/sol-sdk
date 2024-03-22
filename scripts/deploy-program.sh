@@ -78,10 +78,11 @@ echo -e "Program address $program has $program_balance\n"
 # Deploy program.
 if [ $initial == true ]; then
 	echo -e "Calling solana program deploy $program_deploy_path -u $cluster -k $key --program-id $program_key\n"
-	solana program deploy $program_deploy_path -u $cluster -k $key --program-id $program_key
+	solana program deploy $program_deploy_path -u $cluster -k $key --program-id $program_key --max-len 882000
 else
 	echo -e "Calling solana program deploy $program_deploy_path -u $cluster -k $key --program-id $program\n"
-	solana program deploy $program_deploy_path -u $cluster -k $key --program-id $program
+	solana program deploy $program_deploy_path -u $cluster -k $key --program-id $program 
+	# --max-len 882000
 fi
 
 echo -e "This will take a moment...\n"

@@ -22,4 +22,8 @@ pub enum ProgramError {
     InvalidToAccount,
     #[msg("Signer isn't Owner")]
     NotOwner,
+    #[msg("You can't refer yourself")]
+    SelfReferral,
+    #[msg("You can't transfer to yourself")]
+    SelfTransfer,
 }
